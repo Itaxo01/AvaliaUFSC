@@ -187,47 +187,53 @@ src/
 ## Entity Diagram
 
 ```
-┌──────────────┐         ┌───────────────────────┐         ┌──────────────┐
-│    User      │         │ ProfessorDisciplina   │         │   Professor  │
-├──────────────┤    ┌───>│    (Pivot Entity)     │<───┐    ├──────────────┤
-│ id           │    │    ├───────────────────────┤    │    │ id           │
-│ email        │    │    │ professor_id (FK)     │────┘    │ name         │
-│ name         │    │    │ disciplina_id (FK)    │────┐    │ siape        │
-│ studentId    │    │    │ semester              │    │    └──────────────┘
-│ course       │    │    └───────────────────────┘    │           │
-│ role         │    │                                 │           │
-└──────────────┘    │    ┌───────────────────────┐    │           │
-       │            │    │       Course          │<───┘           │
-       │            │    ├───────────────────────┤                │
-       │            │    │ code (PK)             │                │
-       │            │    │ name                  │                │
-       │            │    │ workload              │                │
-       │            │    └───────────────────────┘                │
-       │                          │                               │
-       │                          │                               │
-       ▼                          ▼                               │
-┌──────────────┐         ┌───────────────────────┐                │
-│   Rating     │         │       Comment         │<───────────────┘
-├──────────────┤         ├───────────────────────┤
-│ id           │         │ id                    │
-│ score (1-5)  │         │ content               │
-│ user_id      │         │ user_id (FK)          │
-│ professor_id │         │ professor_id (FK)     │
-│ course_id    │         │ course_id (FK)        │
-└──────────────┘         │ parent_id (FK)        │◄── Self-reference
-                         │ upvotes / downvotes   │    (replies)
-                         │ deleted (soft delete) │
+┌───────────────┐        ┌───────────────────────┐        ┌───────────────┐
+│    Usuario    │        │  ProfessorDisciplina  │        │   Professor   │
+├───────────────┤   ┌───>│    (Pivot Entity)     │<───┐   ├───────────────┤
+│ id            │   │    ├───────────────────────┤    │   │ professorId   │
+│ email         │   │    │ professor_id (FK)     │────┘   │ (Lattes ID)   │
+│ password      │   │    │ disciplina_id (FK)    │────┐   │ nome          │
+│ nome          │   │    │ ultimoSemestre        │    │   └───────────────┘
+│ matricula     │   │    └───────────────────────┘    │          │
+│ curso         │   │                                 │          │
+│ isAdmin       │   │    ┌───────────────────────┐    │          │
+└───────────────┘   │    │     Disciplina        │<───┘          │
+       │            │    ├───────────────────────┤               │
+       │            │    │ disciplinaId (PK)     │               │
+       │            │    │ codigo (unique)       │               │
+       │            │    │ nome                  │               │
+       │            │    └───────────────────────┘               │
+       │                          │                              │
+       ├──────────────────────────┼──────────────────────────────┘
+       │                          │                              
+       ▼                          ▼                              
+┌───────────────┐        ┌───────────────────────┐               
+│   Avaliacao   │        │      Comentario       │               
+├───────────────┤        ├───────────────────────┤
+│ id            │        │ comentarioId          │
+│ nota (1-5)    │        │ texto                 │
+│ usuario (FK)  │        │ usuario (FK)          │
+│ professor(FK) │        │ professor (FK)        │
+│ disciplina(FK)│        │ disciplina (FK)       │
+│ createdAt     │        │ pai (FK)              │◄── Self-ref (replies)
+└───────────────┘        │ upVotes / downVotes   │
+                         │ votes (ElementColl.)  │
+                         │ isEdited / editedAt   │
+                         │ createdAt             │
                          └───────────────────────┘
                                    │
                                    ▼
                          ┌───────────────────────┐
-                         │        File           │
+                         │   ArquivoComentario   │
                          ├───────────────────────┤
                          │ id                    │
-                         │ name                  │
-                         │ type                  │
-                         │ data (BLOB)           │
-                         │ comment_id (FK)       │
+                         │ nomeOriginal          │
+                         │ nomeArquivo           │
+                         │ tipoMime              │
+                         │ tamanho               │
+                         │ caminhoArquivo        │
+                         │ comentario (FK)       │
+                         │ createdAt             │
                          └───────────────────────┘
 ```
 
