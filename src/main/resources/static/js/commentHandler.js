@@ -929,6 +929,28 @@ async function reportComment(comentarioId) {
             method: 'POST'
         });
         
+        // Tratar caso de denúncia duplicada (409 Conflict)
+        if (response.status === 409) {
+            const result = await response.json();
+            
+            // Marcar botão como já denunciado
+            if (reportButton) {
+                reportButton.disabled = true;
+                reportButton.classList.remove('btn-loading');
+                reportButton.classList.add('reported');
+                reportButton.innerHTML = `
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                        <polyline points="22 4 12 14.01 9 11.01"/>
+                    </svg>
+                    <span>denunciado</span>
+                `;
+            }
+            
+            showToast(result.message || 'Você já denunciou este comentário anteriormente.', 'warning');
+            return;
+        }
+        
         if (!response.ok) {
             const errorText = await response.text();
             

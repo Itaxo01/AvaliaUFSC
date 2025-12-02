@@ -102,6 +102,17 @@ public class Comentario {
 	@Column(name = "denuncias_count")
 	private Integer denunciasCount = 0;
 
+	// ✅ Conjunto de usuários que denunciaram este comentário (para evitar duplicatas)
+	@ElementCollection(fetch = FetchType.LAZY)
+	@CollectionTable(
+		name = "comentario_denuncias",
+		joinColumns = @JoinColumn(name = "comentario_id"),
+		uniqueConstraints = @UniqueConstraint(columnNames = {"comentario_id", "user_email"})
+	)
+	@Column(name = "user_email")
+	@OnDelete(action = OnDeleteAction.CASCADE)
+	private Set<String> denunciadoPor = new HashSet<>();
+
 
 	// ✅ Relacionamento direto com Disciplina e Professor (comentários agora são apenas para professores)
 	@ManyToOne(fetch = FetchType.LAZY)
@@ -193,6 +204,16 @@ public class Comentario {
 
 	public Integer getDenunciasCount() { return denunciasCount; }
 	public void setDenunciasCount(Integer denunciasCount) { this.denunciasCount = denunciasCount; }
+
+	public Set<String> getDenunciadoPor() { return denunciadoPor; }
+	public void setDenunciadoPor(Set<String> denunciadoPor) { this.denunciadoPor = denunciadoPor; }
+
+	/**
+	 * Verifica se o usuário já denunciou este comentário
+	 */
+	public boolean foiDenunciadoPor(String userEmail) {
+		return denunciadoPor != null && denunciadoPor.contains(userEmail);
+	}
 
 	public Integer hasVoted(String userEmail) {
 		if(votes.containsKey(userEmail)){
@@ -297,11 +318,25 @@ public class Comentario {
 
 	/**
 	 * Adiciona uma denúncia ao comentário
+	 * @param userEmail email do usuário que está denunciando
+	 * @return true se a denúncia foi adicionada, false se o usuário já denunciou
 	 */
-	public void adicionarDenuncia() {
-		this.denunciasCount = (this.denunciasCount != null ? this.denunciasCount : 0) + 1;
+	public boolean adicionarDenuncia(String userEmail) {
+		if (userEmail == null || userEmail.isBlank()) {
+			throw new IllegalArgumentException("Email do usuário é obrigatório para denunciar");
+		}
+		
+		// Verificar se o usuário já denunciou este comentário
+		if (denunciadoPor.contains(userEmail)) {
+			return false; // Usuário já denunciou
+		}
+		
+		// Adicionar denúncia
+		denunciadoPor.add(userEmail);
+		this.denunciasCount = denunciadoPor.size();
 		this.denunciado = true;
 		this.alarmante = true;
+		return true;
 	}
 
 	/**
@@ -311,6 +346,7 @@ public class Comentario {
 		this.alarmante = false;
 		this.denunciado = false;
 		this.denunciasCount = 0;
+		this.denunciadoPor.clear();
 	}
 
 	public void addUserVote(String userEmail, Boolean isUpVote) throws Exception {

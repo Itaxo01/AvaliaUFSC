@@ -168,14 +168,22 @@ public class ComentarioService {
 
 	 /**
 	  * Denunciar um comentário
+	  * @param comentarioId ID do comentário
+	  * @param userEmail Email do usuário que está denunciando
+	  * @return true se a denúncia foi registrada, false se o usuário já denunciou
 	  */
 	 @Transactional
-	 public Comentario denunciar(Long comentarioId) {
+	 public boolean denunciar(Long comentarioId, String userEmail) {
 		  Comentario comentario = comentarioRepository.findById(comentarioId)
 					 .orElseThrow(() -> new IllegalArgumentException("Comentário não encontrado"));
 		  
-		  comentario.adicionarDenuncia();
-		  return comentarioRepository.save(comentario);
+		  boolean denunciaAdicionada = comentario.adicionarDenuncia(userEmail);
+		  
+		  if (denunciaAdicionada) {
+				comentarioRepository.save(comentario);
+		  }
+		  
+		  return denunciaAdicionada;
 	 }
 
 	 /**

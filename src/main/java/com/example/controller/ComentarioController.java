@@ -409,7 +409,15 @@ public class ComentarioController {
 		logger.debug("Denunciando comentário ID " + comentarioId + " por usuário " + userEmail);
 		
 		try {
-			comentarioService.denunciar(comentarioId);
+			boolean denunciaAdicionada = comentarioService.denunciar(comentarioId, userEmail);
+			
+			if (!denunciaAdicionada) {
+				return ResponseEntity.status(409).body(Map.of(
+					"success", false,
+					"message", "Você já denunciou este comentário anteriormente."
+				));
+			}
+			
 			return ResponseEntity.ok(Map.of(
 				"success", true,
 				"message", "Comentário denunciado com sucesso. Um administrador irá revisar."
