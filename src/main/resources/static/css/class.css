@@ -6,7 +6,7 @@
 .class-container {
     max-width: 1400px;
     margin: 0 auto;
-    padding: 24px 40px;
+    padding: 24px 16px;
 }
 
 /* Breadcrumb */
@@ -14,6 +14,9 @@
     margin-bottom: 24px;
     color: var(--text-secondary);
     font-size: 14px;
+    overflow-x: auto;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
 }
 
 .breadcrumb a {
@@ -31,11 +34,11 @@
     background: var(--bg-white);
     border: 1px solid var(--border-color);
     border-radius: 10px;
-    padding: 28px 32px;
-    margin-bottom: 28px;
+    padding: 20px;
+    margin-bottom: 24px;
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+    flex-direction: column;
+    gap: 16px;
     transition: border-color 0.2s;
 }
 
@@ -45,10 +48,11 @@
 }
 
 .discipline-info h1 {
-    font-size: 26px;
+    font-size: 20px;
     font-weight: 600;
     color: var(--text-primary);
     margin: 0 0 10px 0;
+    word-break: break-word;
 }
 
 .discipline-status {
@@ -173,15 +177,15 @@
 
 /* Layout em Duas Colunas */
 .two-column-layout {
-    display: grid;
-    grid-template-columns: 1fr 2.5fr;
-    gap: 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
 }
 
 /* Colunas */
 .left-column,
 .right-column {
-    min-height: 350px;
+    min-height: auto;
 }
 
 /* Cards de Seção */
@@ -189,22 +193,22 @@
     background: var(--bg-white);
     border: 1px solid var(--border-color);
     border-radius: 10px;
-    padding: 24px;
+    padding: 16px;
 }
 
 .section-card h2 {
-    font-size: 18px;
+    font-size: 16px;
     font-weight: 600;
     color: var(--text-primary);
-    margin: 0 0 18px 0;
-    padding-bottom: 14px;
+    margin: 0 0 16px 0;
+    padding-bottom: 12px;
     border-bottom: 1px solid var(--border-color);
 }
 
 .section-header {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+    flex-direction: column;
+    gap: 12px;
     margin-bottom: 16px;
     padding-bottom: 12px;
     border-bottom: 1px solid var(--border-color);
@@ -225,13 +229,14 @@
 
 .professor-item {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+    flex-direction: column;
+    gap: 8px;
     padding: 12px;
     border: 1px solid var(--border-color);
     border-radius: 6px;
     transition: all 0.2s;
     cursor: pointer;
+    min-height: 44px;
 }
 
 .professor-item:hover {
@@ -325,12 +330,14 @@
     background: var(--primary);
     color: white;
     border: none;
-    padding: 8px 16px;
+    padding: 12px 16px;
     border-radius: 6px;
     font-size: 14px;
     font-weight: 500;
     cursor: pointer;
     transition: background 0.2s;
+    width: 100%;
+    min-height: 44px;
 }
 
 .btn-add-review:hover {
@@ -801,7 +808,7 @@
     display: flex;
     align-items: center;
     gap: 6px;
-    padding: 6px 10px;
+    padding: 8px 12px;
     background: transparent;
     border: none;
     border-radius: 20px;
@@ -811,6 +818,7 @@
     cursor: pointer;
     transition: all 0.15s ease;
     text-transform: lowercase;
+    min-height: 36px;
 }
 
 .review-action-btn:hover {
@@ -1028,45 +1036,263 @@
     font-size: 14px;
 }
 
-/* Responsividade */
-@media (max-width: 768px) {
-    .two-column-layout {
-        grid-template-columns: 1fr;
+/* ============================================
+   RESPONSIVE DESIGN - Mobile First
+   ============================================ */
+
+/* Large screens (1024px and up) */
+@media (min-width: 1024px) {
+    .class-container {
+        padding: 24px 40px;
     }
     
     .discipline-header {
-        flex-direction: column;
-        gap: 16px;
-        text-align: center;
-    }
-    
-    .section-header {
-        flex-direction: column;
-        gap: 12px;
-        align-items: stretch;
-    }
-    
-    .btn-add-review {
-        width: 100%;
-    }
-}
-
-@media (max-width: 480px) {
-    .class-container {
-        padding: 12px;
-    }
-    
-    .discipline-header,
-    .section-card {
-        padding: 16px;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        padding: 28px 32px;
     }
     
     .discipline-info h1 {
-        font-size: 20px;
+        font-size: 26px;
+    }
+    
+    .two-column-layout {
+        display: grid;
+        grid-template-columns: 1fr 2.5fr;
+        gap: 28px;
+    }
+    
+    .left-column,
+    .right-column {
+        min-height: 350px;
+    }
+    
+    .section-card {
+        padding: 24px;
+    }
+    
+    .section-card h2 {
+        font-size: 18px;
+        margin: 0 0 18px 0;
+        padding-bottom: 14px;
+    }
+    
+    .section-header {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .btn-add-review {
+        width: auto;
+    }
+    
+    .professor-item {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .professor-rating {
+        text-align: right;
+    }
+}
+
+/* Tablet (768px - 1023px) */
+@media (max-width: 1023px) and (min-width: 768px) {
+    .class-container {
+        padding: 20px;
+    }
+    
+    .discipline-header {
+        padding: 20px 24px;
+    }
+    
+    .discipline-info h1 {
+        font-size: 22px;
+    }
+    
+    .two-column-layout {
+        display: grid;
+        grid-template-columns: 1fr 1.5fr;
+        gap: 20px;
+    }
+    
+    .section-card {
+        padding: 20px;
+    }
+}
+
+/* Mobile (up to 768px) */
+@media (max-width: 768px) {
+    .class-container {
+        padding: 16px 12px;
+    }
+    
+    .breadcrumb {
+        font-size: 13px;
+        margin-bottom: 16px;
+        padding-bottom: 8px;
+    }
+    
+    .discipline-header {
+        padding: 16px;
+        margin-bottom: 16px;
+        text-align: center;
+    }
+    
+    .discipline-info h1 {
+        font-size: 18px;
+        margin-bottom: 8px;
+    }
+    
+    .discipline-rating {
+        width: 100%;
     }
     
     .rating-score {
-        font-size: 24px;
+        font-size: 28px;
+    }
+    
+    .section-card {
+        padding: 14px;
+    }
+    
+    .section-card h2 {
+        font-size: 15px;
+    }
+    
+    /* Professor Item Mobile */
+    .professor-item {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+    }
+    
+    .professor-info {
+        gap: 10px;
+    }
+    
+    .professor-avatar {
+        width: 36px;
+        height: 36px;
+        min-width: 36px;
+        font-size: 14px;
+    }
+    
+    .professor-name {
+        font-size: 13px;
+    }
+    
+    .professor-rating {
+        min-width: 70px;
+    }
+    
+    .professor-rating .star {
+        font-size: 14px;
+    }
+    
+    /* Review Actions Mobile */
+    .review-actions {
+        flex-wrap: wrap;
+        gap: 2px;
+    }
+    
+    .vote-container {
+        padding: 2px;
+    }
+    
+    .vote-btn {
+        width: 32px;
+        height: 32px;
+    }
+    
+    .review-action-btn {
+        padding: 8px 10px;
+        font-size: 11px;
+    }
+    
+    .review-action-btn svg {
+        width: 14px;
+        height: 14px;
+    }
+    
+    /* Hide button text on small screens, show only icons */
+    .review-action-btn span:not(.btn-icon) {
+        display: none;
+    }
+    
+    .action-separator {
+        display: none;
+    }
+    
+    /* Comment Form Mobile */
+    .comment-editor {
+        padding: 12px;
+    }
+    
+    .comment-textarea {
+        min-height: 100px;
+        font-size: 16px; /* Prevents zoom on iOS */
+    }
+    
+    .comment-actions {
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .btn-cancel,
+    .btn-submit {
+        width: 100%;
+        padding: 12px 16px;
+    }
+    
+    /* Attachments Mobile */
+    .comment-attachments {
+        flex-direction: column;
+    }
+    
+    .attachment-pdf,
+    .attachment-doc {
+        min-width: auto;
+        max-width: 100%;
+    }
+    
+    .attachment-image {
+        max-width: 100%;
+    }
+    
+    .attachment-image img {
+        height: 120px;
+    }
+    
+    /* Nested Comments Mobile */
+    .child-comments-container {
+        margin-left: 8px;
+        padding-left: 8px;
+    }
+    
+    /* Review Card Mobile */
+    .review-card {
+        padding: 12px;
+    }
+    
+    .reviewer-info {
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+    
+    .reviewer-date {
+        margin-left: 0;
+        width: 100%;
+        font-size: 11px;
+    }
+    
+    .review-content {
+        font-size: 14px;
+        line-height: 1.5;
     }
 }
 
@@ -1189,14 +1415,39 @@
 }
 
 /* Mobile responsiveness for rating modal */
-@media (max-width: 480px) {
+@media (max-width: 768px) {
+    .rating-modal-content {
+        padding: 20px;
+        width: 95%;
+    }
+    
     .modal-star {
-        font-size: 40px;
+        font-size: 36px;
+    }
+    
+    .rating-modal-stars {
         gap: 8px;
     }
     
-    .rating-modal-content {
-        padding: 20px;
+    .rating-modal-actions {
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .btn-modal-cancel,
+    .btn-modal-submit {
+        width: 100%;
+        padding: 12px 20px;
+    }
+}
+
+@media (max-width: 480px) {
+    .modal-star {
+        font-size: 32px;
+    }
+    
+    .rating-modal-content h3 {
+        font-size: 18px;
     }
 }
 
@@ -1609,14 +1860,24 @@
 }
 
 /* Mobile responsiveness for reply editor */
-@media (max-width: 600px) {
+@media (max-width: 768px) {
     .reply-editor-container {
         width: 95%;
         max-height: 90vh;
+        margin: 16px;
     }
     
     .reply-editor-header {
         padding: 16px;
+    }
+    
+    .reply-editor-header h3 {
+        font-size: 16px;
+    }
+    
+    .btn-close-reply {
+        width: 44px;
+        height: 44px;
     }
     
     .reply-form {
@@ -1626,7 +1887,7 @@
     
     .reply-textarea {
         min-height: 100px;
-        font-size: 16px;
+        font-size: 16px; /* Prevents zoom on iOS */
     }
     
     .reply-actions {
@@ -1636,6 +1897,7 @@
     .reply-actions .btn-cancel,
     .reply-actions .btn-submit {
         width: 100%;
+        padding: 12px 16px;
     }
     
     /* Reduce indentation on mobile */
@@ -1650,5 +1912,97 @@
     .child-comments-container.nest-level-4,
     .child-comments-container.nest-level-5,
     .child-comments-container.nest-level-6 { margin-left: 16px; }
+    
+    /* Inline edit mobile */
+    .inline-edit-actions {
+        flex-direction: column;
+    }
+    
+    .inline-edit-actions .btn-cancel,
+    .inline-edit-actions .btn-save {
+        width: 100%;
+        padding: 10px 14px;
+    }
+}
+
+/* Small mobile (up to 480px) */
+@media (max-width: 480px) {
+    .class-container {
+        padding: 12px 8px;
+    }
+    
+    .discipline-header {
+        padding: 14px;
+    }
+    
+    .discipline-info h1 {
+        font-size: 16px;
+    }
+    
+    .rating-score {
+        font-size: 24px;
+    }
+    
+    .section-card {
+        padding: 12px;
+    }
+    
+    .section-card h2 {
+        font-size: 14px;
+    }
+    
+    .professor-avatar {
+        width: 32px;
+        height: 32px;
+        min-width: 32px;
+        font-size: 12px;
+    }
+    
+    .professor-name {
+        font-size: 12px;
+    }
+    
+    .professor-rating .star {
+        font-size: 12px;
+    }
+    
+    .review-card {
+        padding: 10px;
+    }
+    
+    .reviewer-avatar {
+        width: 28px;
+        height: 28px;
+        font-size: 12px;
+    }
+    
+    .reviewer-name {
+        font-size: 13px;
+    }
+    
+    .review-content {
+        font-size: 13px;
+    }
+    
+    /* Vote buttons smaller */
+    .vote-btn {
+        width: 28px;
+        height: 28px;
+    }
+    
+    .vote-btn svg {
+        width: 14px;
+        height: 14px;
+    }
+    
+    .vote-score {
+        font-size: 11px;
+        min-width: 16px;
+    }
+    
+    .review-action-btn {
+        padding: 6px 8px;
+        font-size: 10px;
+    }
 }
 

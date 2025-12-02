@@ -24,11 +24,19 @@
             </div>
 
             <div class="nav-links">
+                <!-- Search Toggle Button (Mobile) -->
+                <button class="search-toggle" id="searchToggle" aria-label="Buscar">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <path d="m21 21-4.35-4.35"></path>
+                    </svg>
+                </button>
+
                 <a href="/admin" class="nav-link active">Administração</a>
                 
                 <!-- User Menu -->
                 <div class="user-menu">
-                    <a href="/user" class="user-avatar" th:title="${userName != null ? userName : 'Perfil'}">
+                    <a href="javascript:void(0)" class="user-avatar" id="userAvatar" th:title="${userName != null ? userName : 'Perfil'}">
                         <span th:text="${userInitial != null ? userInitial : 'U'}">U</span>
                     </a>
                     <button class="btn-logout" onclick="logout()" title="Sair">
@@ -38,6 +46,24 @@
                             <line x1="21" y1="12" x2="9" y2="12"></line>
                         </svg>
                     </button>
+                    <!-- Mobile Dropdown -->
+                    <div class="user-dropdown" id="userDropdown">
+                        <a href="/user">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="12" cy="7" r="4"></circle>
+                            </svg>
+                            Minha Conta
+                        </a>
+                        <button class="logout-item" onclick="logout()">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                                <polyline points="16 17 21 12 16 7"></polyline>
+                                <line x1="21" y1="12" x2="9" y2="12"></line>
+                            </svg>
+                            Sair
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -49,6 +75,41 @@
     <script>
     function logout() {
         document.getElementById('logout-form').submit();
+    }
+    
+    // Search toggle for mobile
+    const searchToggle = document.getElementById('searchToggle');
+    const navSearch = document.querySelector('.nav-search');
+    if (searchToggle && navSearch) {
+        searchToggle.addEventListener('click', () => {
+            navSearch.classList.toggle('active');
+            if (navSearch.classList.contains('active')) {
+                document.getElementById('searchInput').focus();
+            }
+        });
+    }
+    
+    // User avatar dropdown for mobile
+    const userAvatar = document.getElementById('userAvatar');
+    const userDropdown = document.getElementById('userDropdown');
+    if (userAvatar && userDropdown) {
+        userAvatar.addEventListener('click', (e) => {
+            // On desktop, redirect to user page
+            if (window.innerWidth > 768) {
+                window.location.href = '/user';
+                return;
+            }
+            // On mobile, toggle dropdown
+            e.preventDefault();
+            userDropdown.classList.toggle('active');
+        });
+        
+        // Close dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!userAvatar.contains(e.target) && !userDropdown.contains(e.target)) {
+                userDropdown.classList.remove('active');
+            }
+        });
     }
     </script>
 
