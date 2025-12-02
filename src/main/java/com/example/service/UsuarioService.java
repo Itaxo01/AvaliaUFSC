@@ -4,11 +4,14 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
 import com.example.model.Usuario;
+import com.example.model.UsuarioBanido;
 import com.example.repository.UsuarioRepository;
+import com.example.repository.UsuarioBanidoRepository;
 
 
 
@@ -19,6 +22,9 @@ import com.example.repository.UsuarioRepository;
 public class UsuarioService {
     @Autowired
 	 private UsuarioRepository usuarioRepository;
+
+	 @Autowired
+	 private UsuarioBanidoRepository usuarioBanidoRepository;
 
 	 @Autowired
 	 private ComentarioService comentarioService;
@@ -114,5 +120,76 @@ public class UsuarioService {
 		} else {
 			throw new Exception("401");
 		}
+	}
+
+	// ==================== Métodos de Banimento ====================
+
+	/**
+	 * Verifica se uma matrícula está banida.
+	 */
+	public boolean isMatriculaBanida(String matricula) {
+		return usuarioBanidoRepository.existsByMatricula(matricula);
+	}
+
+	/**
+	 * Bane um usuário pela matrícula, impedindo que ele crie uma nova conta.
+	 * O usuário também é deletado do sistema.
+	 * 
+	 * @param email Email do usuário a ser banido
+	 * @param adminEmail Email do admin que está banindo
+	 * @param motivo Motivo do banimento (opcional)
+	 * @return true se o banimento foi bem sucedido
+	 */
+	@Transactional
+	public boolean banirUsuario(String email, String adminEmail, String motivo) {
+		Optional<Usuario> usuarioOpt = usuarioRepository.findByEmail(email);
+		if (usuarioOpt.isEmpty()) {
+			logger.warn("Tentativa de banir usuário inexistente: " + email);
+			return false;
+		}
+
+		Usuario usuario = usuarioOpt.get();
+		
+		// Verifica se já está banido
+		if (usuarioBanidoRepository.existsByMatricula(usuario.getMatricula())) {
+			logger.warn("Usuário já está banido: " + email);
+			return false;
+		}
+
+		// Cria registro de banimento
+		UsuarioBanido banido = new UsuarioBanido(
+			usuario.getMatricula(),
+			usuario.getEmail(),
+			usuario.getNome(),
+			adminEmail,
+			motivo
+		);
+		usuarioBanidoRepository.save(banido);
+
+		// Deleta o usuário
+		usuarioRepository.delete(usuario);
+
+		logger.info("Usuário banido com sucesso: " + email + " (matrícula: " + usuario.getMatricula() + ")");
+		return true;
+	}
+
+	/**
+	 * Remove o banimento de uma matrícula.
+	 */
+	@Transactional
+	public boolean desbanirMatricula(String matricula) {
+		if (!usuarioBanidoRepository.existsByMatricula(matricula)) {
+			return false;
+		}
+		usuarioBanidoRepository.deleteByMatricula(matricula);
+		logger.info("Banimento removido para matrícula: " + matricula);
+		return true;
+	}
+
+	/**
+	 * Lista todos os usuários banidos.
+	 */
+	public List<UsuarioBanido> listarBanidos() {
+		return usuarioBanidoRepository.findAll();
 	}
 }

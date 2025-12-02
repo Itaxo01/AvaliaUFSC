@@ -30,6 +30,74 @@
     border: 1px solid var(--border-color);
 }
 
+.banned-users-section {
+    background: var(--bg-white);
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 51, 102, 0.06);
+    overflow: hidden;
+    margin-bottom: 30px;
+    border: 1px solid #f5c6cb;
+}
+
+.banned-users-section .section-header {
+    background: #f8d7da;
+    border-bottom: 1px solid #f5c6cb;
+}
+
+.banned-users-section .section-header h2 {
+    color: #721c24;
+}
+
+.banned-users-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9em;
+}
+
+.banned-users-table th {
+    background: #fff5f5;
+    padding: 12px 15px;
+    text-align: left;
+    font-weight: 600;
+    color: #721c24;
+    border-bottom: 2px solid #f5c6cb;
+}
+
+.banned-users-table td {
+    padding: 12px 15px;
+    border-bottom: 1px solid var(--border-color);
+    vertical-align: middle;
+}
+
+.banned-users-table tr:hover {
+    background-color: #fff8f8;
+}
+
+.btn-unban {
+    background-color: var(--success);
+    color: white;
+}
+
+.btn-unban:hover {
+    background-color: #28a745;
+}
+
+.btn-ban {
+    background-color: #dc3545;
+    color: white;
+}
+
+.btn-ban:hover {
+    background-color: #c82333;
+}
+
+.no-banned-users {
+    text-align: center;
+    color: var(--text-secondary);
+    font-style: italic;
+    padding: 40px;
+}
+
 .scrapper-section {
     background: var(--bg-white);
     border-radius: 8px;

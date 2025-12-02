@@ -51,6 +51,15 @@ public class RegisterController {
 			return "register";
 		}
 
+		// Verifica se a matrícula está banida
+		if (userService.isMatriculaBanida(valid.matricula())) {
+			logger.warn("Tentativa de registro com matrícula banida: " + valid.matricula());
+			model.addAttribute("error", "Esta matrícula foi banida do sistema. Entre em contato com a administração.");
+			model.addAttribute("emailValue", email);
+			model.addAttribute("passwordValue", password);
+			return "register";
+		}
+
 		try {
 			userService.create(email, password, valid.nome(), valid.matricula(), valid.curso());
 

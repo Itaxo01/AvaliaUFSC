@@ -97,6 +97,82 @@ public class AdminAPIController {
 		}
 	}
 
+	@PostMapping("/ban-user")
+	public ResponseEntity<String> banUser(HttpServletRequest request, @RequestBody Map<String,String> body) {
+		boolean auth = sessionService.verifySession(request);
+		if (!auth || !sessionService.currentUserIsAdmin(request)) {
+			return ResponseEntity.status(403).build();
+		}
+		
+		String email = body.get("email");
+		String motivo = body.get("motivo");
+		
+		if(email == null || email.trim().isEmpty()) {
+			return ResponseEntity.status(400).body("Email é obrigatório.");
+		}
+		
+		logger.debug("Banir usuário: " + email);
+		
+		try {
+			String adminEmail = sessionService.getCurrentUser(request);
+			boolean success = userService.banirUsuario(email, adminEmail, motivo);
+			
+			if(!success) {
+				return ResponseEntity.status(404).body("Usuário não encontrado ou já banido.");
+			}
+			
+			return ResponseEntity.ok("Usuário banido com sucesso.");
+		} catch (Exception e) {
+			logger.error("Erro ao banir usuário: " + e.getMessage());
+			return ResponseEntity.status(500).body("Erro ao banir usuário.");
+		}
+	}
+
+	@PostMapping("/unban-user")
+	public ResponseEntity<String> unbanUser(HttpServletRequest request, @RequestBody Map<String,String> body) {
+		boolean auth = sessionService.verifySession(request);
+		if (!auth || !sessionService.currentUserIsAdmin(request)) {
+			return ResponseEntity.status(403).build();
+		}
+		
+		String matricula = body.get("matricula");
+		
+		if(matricula == null || matricula.trim().isEmpty()) {
+			return ResponseEntity.status(400).body("Matrícula é obrigatória.");
+		}
+		
+		logger.debug("Desbanir matrícula: " + matricula);
+		
+		try {
+			boolean success = userService.desbanirMatricula(matricula);
+			
+			if(!success) {
+				return ResponseEntity.status(404).body("Matrícula não está banida.");
+			}
+			
+			return ResponseEntity.ok("Banimento removido com sucesso.");
+		} catch (Exception e) {
+			logger.error("Erro ao desbanir usuário: " + e.getMessage());
+			return ResponseEntity.status(500).body("Erro ao remover banimento.");
+		}
+	}
+
+	@GetMapping("/banned-users")
+	public ResponseEntity<?> getBannedUsers(HttpServletRequest request) {
+		boolean auth = sessionService.verifySession(request);
+		if (!auth || !sessionService.currentUserIsAdmin(request)) {
+			return ResponseEntity.status(403).build();
+		}
+		
+		try {
+			var banidos = userService.listarBanidos();
+			return ResponseEntity.ok(banidos);
+		} catch (Exception e) {
+			logger.error("Erro ao listar usuários banidos: " + e.getMessage());
+			return ResponseEntity.status(500).body("Erro ao listar usuários banidos.");
+		}
+	}
+
 	/**
 	 * Endpoint para obter status do scrapper de disciplinas
 	 */
