@@ -263,7 +263,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const stats = calcularStats(avaliacoesProf);
             atualizarProfessor(index, stats);
             
-            // Adicionar click listener
+            // Adicionar click listener (desktop)
             const professorItem = document.querySelectorAll('.professor-item')[index];
             if (professorItem) {
                 professorItem.addEventListener('click', () => {
@@ -273,6 +273,32 @@ document.addEventListener('DOMContentLoaded', function() {
                         selecionarProfessor(profId, profNome);
                     }
                 });
+            }
+            
+            // ✅ Adicionar click listener (mobile sidebar)
+            const sidebarItem = document.querySelectorAll('.sidebar-professor-item')[index];
+            if (sidebarItem) {
+                sidebarItem.addEventListener('click', (e) => {
+                    // ✅ Don't select professor if clicking on stars/rating area
+                    if (e.target.closest('.sidebar-professor-rating')) {
+                        return; // Let the rating handler deal with this
+                    }
+                    
+                    if (String(professorSelecionado) !== String(profId)) {
+                        console.log('Mobile: Alternando para professor:', profId, profNome);
+                        selecionarProfessor(profId, profNome);
+                    }
+                    // Close sidebar after selection
+                    if (window.innerWidth <= 768 && typeof window.closeProfessorSidebar === 'function') {
+                        window.closeProfessorSidebar();
+                    }
+                });
+                
+                // Also update sidebar ratings
+                const sidebarRating = sidebarItem.querySelector('.sidebar-professor-rating');
+                if (sidebarRating) {
+                    updateSidebarProfessorRating(sidebarRating, stats);
+                }
             }
         });
         
@@ -464,29 +490,30 @@ function toggleCommentEditor() {
     const sectionCard = document.querySelector('.right-column .section-card');
     
     // Check if editor is currently in reply mode (positioned inline elsewhere)
-    const isInlineMode = replyingToCommentId !== null;
+    const isInReplyMode = replyingToCommentId !== null;
     // Also check if editor is not in its original container
     const isOutOfPlace = editor.parentNode !== sectionCard;
     
     // Cancel any inline edit in progress
     cancelInlineEdit();
     
-    if (editor.classList.contains('show') && !isInlineMode && !isOutOfPlace) {
-        // Close editor only if in original position and not in reply mode
+    // If in reply mode or out of place, just close/reset and return
+    if (isInReplyMode || isOutOfPlace) {
         editor.classList.remove('show');
-        button.classList.remove('active');
+        if (button) button.classList.remove('active');
+        resetCommentEditor();
+        return;
+    }
+    
+    if (editor.classList.contains('show')) {
+        // Close editor
+        editor.classList.remove('show');
+        if (button) button.classList.remove('active');
         resetCommentEditor();
     } else {
-        // If in inline mode or out of place, reset and move back to top first
-        if (isInlineMode || isOutOfPlace) {
-            // First hide, reset, then show again
-            editor.classList.remove('show');
-            resetCommentEditor();
-        }
-        
         // Open editor at original position (top)
         editor.classList.add('show');
-        button.classList.add('active');
+        if (button) button.classList.add('active');
         
         // Update subtitle based on current context
         updateEditorSubtitle();
@@ -588,15 +615,19 @@ function selecionarProfessor(professorId, professorNome) {
     
     console.log(`📊 Avaliações do professor ${professorNome}:`, avaliacoes.length);
     
-    // Remover seleção anterior de TODOS os professores
+    // Remover seleção anterior de TODOS os professores (desktop)
     document.querySelectorAll('.professor-item').forEach(item => {
         item.classList.remove('selected');
     });
     
-    // Encontrar e selecionar o professor correto
+    // Remover seleção anterior de TODOS os professores (mobile sidebar)
+    document.querySelectorAll('.sidebar-professor-item').forEach(item => {
+        item.classList.remove('selected');
+    });
+    
+    // Encontrar e selecionar o professor correto (desktop)
     const professorItems = Array.from(document.querySelectorAll('.professor-item'));
     professorItems.forEach((item, idx) => {
-        // Obter ID do professor usando a mesma lógica de fallback
         const prof = PROFESSORES_DATA[idx];
         if (prof) {
             const profId = prof.id || prof.professorId || prof.ID || idx;
@@ -606,6 +637,24 @@ function selecionarProfessor(professorId, professorNome) {
             }
         }
     });
+    
+    // Encontrar e selecionar o professor correto (mobile sidebar)
+    const sidebarItems = Array.from(document.querySelectorAll('.sidebar-professor-item'));
+    sidebarItems.forEach((item, idx) => {
+        const prof = PROFESSORES_DATA[idx];
+        if (prof) {
+            const profId = prof.id || prof.professorId || prof.ID || idx;
+            if (String(profId) === String(professorId)) {
+                item.classList.add('selected');
+            }
+        }
+    });
+    
+    // ✅ Atualizar texto do professor selecionado no card mobile
+    const selectedProfessorName = document.getElementById('selectedProfessorName');
+    if (selectedProfessorName) {
+        selectedProfessorName.textContent = professorNome;
+    }
     
     const sectionTitle = document.querySelector('.section-header h2');
     if (sectionTitle) {
@@ -640,6 +689,23 @@ function mostrarInterfaceSemProfessores() {
     const commentEditor = document.getElementById('commentEditor');
     if (commentEditor) {
         commentEditor.style.display = 'none';
+    }
+    
+    // ✅ Esconder o card mobile de disciplina (já que não há professores)
+    const mobileCard = document.querySelector('.mobile-discipline-card');
+    if (mobileCard) {
+        mobileCard.style.display = 'none';
+    }
+    
+    // ✅ Esconder a sidebar de professores
+    const professorSidebar = document.getElementById('professorSidebar');
+    if (professorSidebar) {
+        professorSidebar.style.display = 'none';
+    }
+    
+    const professorOverlay = document.getElementById('professorOverlay');
+    if (professorOverlay) {
+        professorOverlay.style.display = 'none';
     }
     
     // Mostrar mensagem na lista de comentários

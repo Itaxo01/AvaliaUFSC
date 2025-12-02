@@ -100,6 +100,93 @@
 }
 
 /* ============================================
+   INFO ICON & TOOLTIP
+   ============================================ */
+
+.info-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    margin-left: 6px;
+    color: var(--text-muted);
+    cursor: help;
+    position: relative;
+    vertical-align: middle;
+    transition: color 0.2s;
+}
+
+.info-icon:hover,
+.info-icon:focus {
+    color: var(--primary);
+    outline: none;
+}
+
+.info-icon svg {
+    width: 16px;
+    height: 16px;
+}
+
+.info-tooltip {
+    display: none;
+    position: absolute;
+    bottom: calc(100% + 10px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--bg-white);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 14px 16px;
+    width: 280px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    text-align: left;
+    z-index: 100;
+}
+
+.info-tooltip::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 8px solid transparent;
+    border-top-color: var(--bg-white);
+}
+
+.info-tooltip::before {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 9px solid transparent;
+    border-top-color: var(--border-color);
+}
+
+.info-tooltip strong {
+    display: block;
+    color: var(--text-primary);
+    font-size: 14px;
+    margin-bottom: 4px;
+}
+
+.info-tooltip em {
+    display: block;
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.info-icon:hover .info-tooltip,
+.info-icon:focus .info-tooltip {
+    display: block;
+}
+
+/* ============================================
    RESPONSIVE DESIGN - Mobile First
    ============================================ */
 
@@ -153,5 +240,22 @@
     
     .form-footer p {
         font-size: 13px;
+    }
+    
+    /* Tooltip mobile adjustments */
+    .info-tooltip {
+        width: 240px;
+        left: auto;
+        right: -10px;
+        transform: none;
+        font-size: 12px;
+        padding: 12px 14px;
+    }
+    
+    .info-tooltip::after,
+    .info-tooltip::before {
+        left: auto;
+        right: 20px;
+        transform: none;
     }
 }

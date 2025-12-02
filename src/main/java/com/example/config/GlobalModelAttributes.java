@@ -39,13 +39,13 @@ public class GlobalModelAttributes {
                 // Adicionar informações do usuário
                 model.addAttribute("userEmail", userEmail);
                 model.addAttribute("isAdmin", usuario.getIsAdmin());
-                model.addAttribute("userName", usuario.getNome());
-                model.addAttribute("userCurso", usuario.getCurso());
                 
-                // Adicionar inicial do usuário para o avatar
-                String nome = usuario.getNome();
-                if (nome != null && !nome.isEmpty()) {
-                    model.addAttribute("userInitial", nome.substring(0, 1).toUpperCase());
+                // Adicionar inicial do usuário para o avatar (baseado no email)
+                String email = usuario.getEmail();
+                if (email != null && email.length() >= 2) {
+                    model.addAttribute("userInitial", email.substring(0, 2).toUpperCase());
+                } else if (email != null && email.length() == 1) {
+                    model.addAttribute("userInitial", email.substring(0, 1).toUpperCase());
                 } else {
                     model.addAttribute("userInitial", "U");
                 }

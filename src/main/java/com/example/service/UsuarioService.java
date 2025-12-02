@@ -39,14 +39,14 @@ public class UsuarioService {
      * Cria um novo usuário após validar duplicidade de email e matrícula.
      * Senha é armazenada com hash BCrypt.
      */
-    public Usuario create(String email, String password, String nome, String matricula, String curso) throws IllegalArgumentException {
+    public Usuario create(String email, String password, String matricula) throws IllegalArgumentException {
 		String hashPassword = HashingService.hashPassword(password);
 		
 		Optional<Usuario> usuarioOpt = usuarioRepository.findByEmail(email);
 		if(usuarioOpt.isPresent()) {
 			throw new IllegalArgumentException("Email já registrado.");
 		} else {
-			Usuario usuario = new Usuario(email, hashPassword, nome, matricula, curso);
+			Usuario usuario = new Usuario(email, hashPassword, matricula);
 			return usuarioRepository.save(usuario);
 		}
     }
@@ -160,7 +160,6 @@ public class UsuarioService {
 		UsuarioBanido banido = new UsuarioBanido(
 			usuario.getMatricula(),
 			usuario.getEmail(),
-			usuario.getNome(),
 			adminEmail,
 			motivo
 		);

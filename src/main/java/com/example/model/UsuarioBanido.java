@@ -22,9 +22,6 @@ public class UsuarioBanido {
 	@Column(nullable = false)
 	private String email;
 
-	@Column(nullable = false)
-	private String nome;
-
 	@Column(name = "banido_em", nullable = false)
 	private Instant banidoEm = Instant.now();
 
@@ -36,10 +33,9 @@ public class UsuarioBanido {
 
 	public UsuarioBanido() {}
 
-	public UsuarioBanido(String matricula, String email, String nome, String banidoPor, String motivo) {
+	public UsuarioBanido(String matricula, String email, String banidoPor, String motivo) {
 		this.matricula = matricula;
 		this.email = email;
-		this.nome = nome;
 		this.banidoPor = banidoPor;
 		this.motivo = motivo;
 	}
@@ -53,9 +49,6 @@ public class UsuarioBanido {
 
 	public String getEmail() { return email; }
 	public void setEmail(String email) { this.email = email; }
-
-	public String getNome() { return nome; }
-	public void setNome(String nome) { this.nome = nome; }
 
 	public Instant getBanidoEm() { return banidoEm; }
 	public void setBanidoEm(Instant banidoEm) { this.banidoEm = banidoEm; }

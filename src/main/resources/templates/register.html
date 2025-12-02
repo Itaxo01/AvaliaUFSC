@@ -44,7 +44,22 @@
                 </div>
                 
                 <div class="form-group file-upload">
-                    <label for="pdf">Atestado de Matrícula em Português (PDF)
+                    <label for="pdf">
+                        Atestado de Matrícula em Português (PDF)
+                        <span class="info-icon" tabindex="0">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <line x1="12" y1="16" x2="12" y2="12"></line>
+                                <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                            </svg>
+                            <span class="info-tooltip">
+                                <strong>Por que pedimos o atestado?</strong><br><br>
+                                O atestado de matrícula é utilizado para verificar que você é um estudante ativo da UFSC. 
+                                Isso garante que apenas alunos reais possam avaliar disciplinas e professores, 
+                                mantendo a credibilidade das avaliações.<br><br>
+                                <em>Apenas a sua matrícula é armazenada após a verificação.</em>
+                            </span>
+                        </span>
                         <input type="file" id="pdf" name="pdf" accept=".pdf" required>
                         <div class="file-upload-text">
                             <span class="file-icon">📄</span>
@@ -72,7 +87,14 @@
         </div>
     </div>
 
-
-
+    <!-- Footer -->
+    <footer class="site-footer">
+        <div class="footer-content">
+            <p class="footer-disclaimer">Este site não possui vínculo com a universidade e utiliza dados disponíveis no site da instituição.</p>
+				<p>O código é open-source e está disponível em <a href="https://github.com/Itaxo01/AvaliaUFSC">https://github.com/Itaxo01/AvaliaUFSC</a></p>
+            
+            <p class="footer-contact">Notou algum erro? Entre em contato: <a href="mailto:kauan.fank@gmail.com">kauan.fank@gmail.com</a></p>
+        </div>
+    </footer>
 </body>
 </html>

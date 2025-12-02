@@ -125,8 +125,7 @@ public class ComentarioController {
 			return ResponseEntity.ok(Map.of(
 				"success", true,
 				"message", "Comentário publicado com sucesso",
-				"comentarioId", comentario.getComentarioId(),
-				"nomeUsuario", usuario.getNome() != null ? usuario.getNome() : "Usuário"
+				"comentarioId", comentario.getComentarioId()
 			));
 
 		} catch (Exception e) {
@@ -216,8 +215,7 @@ public class ComentarioController {
 			return ResponseEntity.ok(Map.of(
 				"success", true,
 				"message", "Comentário publicado com sucesso",
-				"comentarioId", comentario.getComentarioId(),
-				"nomeUsuario", usuario.getNome() != null ? usuario.getNome() : "Usuário"
+				"comentarioId", comentario.getComentarioId()
 			));
 
 		} catch (Exception e) {

@@ -21,7 +21,7 @@
                 
                 <!-- User Menu -->
                 <div class="user-menu">
-                    <a href="javascript:void(0)" class="user-avatar" id="userAvatar" th:title="${userName != null ? userName : 'Perfil'}">
+                    <a href="javascript:void(0)" class="user-avatar" id="userAvatar" title="Minha Conta">
                         <span th:text="${userInitial != null ? userInitial : 'U'}">U</span>
                     </a>
                     <button class="btn-logout" onclick="logout()" title="Sair">
@@ -128,5 +128,15 @@
             }
         });
     </script>
+
+    <!-- Footer -->
+    <footer class="site-footer">
+        <div class="footer-content">
+            <p class="footer-disclaimer">Este site não possui vínculo com a universidade e utiliza dados disponíveis no site da instituição.</p>
+<p>O código é open-source e está disponível em <a href="https://github.com/Itaxo01/AvaliaUFSC">https://github.com/Itaxo01/AvaliaUFSC</a></p>
+            
+            <p class="footer-contact">Notou algum erro? Entre em contato: <a href="mailto:kauan.fank@gmail.com">kauan.fank@gmail.com</a></p>
+        </div>
+    </footer>
 </body>
 </html>

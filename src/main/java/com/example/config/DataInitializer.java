@@ -24,14 +24,8 @@ public class DataInitializer implements CommandLineRunner {
     @Value("${admin.password}")
     private String adminPassword;
 
-    @Value("${admin.nome}")
-    private String adminNome;
-
     @Value("${admin.matricula}")
     private String adminMatricula;
-
-    @Value("${admin.curso}")
-    private String adminCurso;
 
 	 private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(DataInitializer.class);
 
@@ -41,7 +35,7 @@ public class DataInitializer implements CommandLineRunner {
         if (userService.getUsuario(adminEmail) == null) {
             logger.info("Criando usuário administrador...");
             
-            userService.create(adminEmail, adminPassword, adminNome, adminMatricula, adminCurso);
+            userService.create(adminEmail, adminPassword, adminMatricula);
             
             logger.info("Usuário administrador criado com sucesso!");
 

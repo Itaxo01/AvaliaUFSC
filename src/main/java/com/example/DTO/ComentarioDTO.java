@@ -29,27 +29,25 @@ public record ComentarioDTO (
 		  List<ComentarioDTO> filhos) { 
 
 	/**
-	 * Extrai as iniciais do nome do usuário (ex: "João Silva" -> "JS")
+	 * Extrai as iniciais do email do usuário (ex: "joao@email.com" -> "JO")
+	 * Pega as duas primeiras letras do email antes do @
 	 */
-	private static String extractInitials(String nome) {
-		if (nome == null || nome.isBlank()) {
+	private static String extractInitials(String email) {
+		if (email == null || email.isBlank()) {
 			return "?";
 		}
-		String[] partes = nome.trim().split("\\s+");
-		if (partes.length >= 2) {
-			// Primeira letra do primeiro nome + primeira letra do último nome
-			return (partes[0].substring(0, 1) + partes[partes.length - 1].substring(0, 1)).toUpperCase();
-		} else if (partes.length == 1 && partes[0].length() >= 2) {
-			// Se só tem um nome, pega as duas primeiras letras
-			return partes[0].substring(0, 2).toUpperCase();
-		} else if (partes.length == 1) {
-			return partes[0].substring(0, 1).toUpperCase();
+		// Pegar a parte antes do @
+		String localPart = email.split("@")[0];
+		if (localPart.length() >= 2) {
+			return localPart.substring(0, 2).toUpperCase();
+		} else if (localPart.length() == 1) {
+			return localPart.substring(0, 1).toUpperCase();
 		}
 		return "?";
 	}
 
 	public static ComentarioDTO from(Comentario c, String currentUserEmail) {
-		String initials = c.getUsuario() != null ? extractInitials(c.getUsuario().getNome()) : "?";
+		String initials = c.getUsuario() != null ? extractInitials(c.getUsuario().getEmail()) : "?";
 		
 		return new ComentarioDTO(
 				c.getComentarioId(),

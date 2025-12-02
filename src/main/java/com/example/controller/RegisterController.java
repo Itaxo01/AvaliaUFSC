@@ -61,7 +61,7 @@ public class RegisterController {
 		}
 
 		try {
-			userService.create(email, password, valid.nome(), valid.matricula(), valid.curso());
+			userService.create(email, password, valid.matricula());
 
 			redirectAttributes.addFlashAttribute("successMessage", "Registro concluído, por favor faça o login");
 			return "redirect:/login";

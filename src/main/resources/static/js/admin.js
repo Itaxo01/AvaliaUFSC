@@ -614,8 +614,7 @@ function renderAdminCommentCard(comment, isAlarmingList) {
 				<div class="user-info">
 					<div class="user-avatar">${comment.userInitials || '?'}</div>
 					<div class="user-details">
-						<span class="user-name">${escapeHtml(comment.userName || 'Usuário')}</span>
-						<span class="user-email">${escapeHtml(comment.userEmail || '')}</span>
+						<span class="user-email">${escapeHtml(comment.userEmail || 'Usuário')}</span>
 					</div>
 				</div>
 				<div class="comment-meta">
@@ -646,7 +645,7 @@ function renderAdminCommentCard(comment, isAlarmingList) {
 			<div class="comment-actions">
 				${markSafeButton}
 				<button class="btn btn-danger btn-sm" onclick="deleteAdminComment(${comment.id})">🗑️ Deletar</button>
-				<button class="btn btn-warning btn-sm" onclick="banUserByComment(${comment.id}, '${escapeHtml(comment.userName)}')">⛔ Banir</button>
+				<button class="btn btn-warning btn-sm" onclick="banUserByComment(${comment.id}, '${escapeHtml(comment.userEmail)}')">⛔ Banir</button>
 			</div>
 		</div>
 	`;
@@ -814,8 +813,8 @@ async function deleteAdminComment(commentId) {
 	}
 }
 
-async function banUserByComment(commentId, userName) {
-	const motivo = prompt(`Banir o usuário ${userName}?\n\nMotivo (opcional):`);
+async function banUserByComment(commentId, userEmail) {
+	const motivo = prompt(`Banir o usuário ${userEmail}?\n\nMotivo (opcional):`);
 	if (motivo === null) return;
 	
 	// Encontrar o botão e adicionar estado de loading

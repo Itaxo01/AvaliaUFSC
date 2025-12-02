@@ -56,9 +56,13 @@ function renderCommentCard(comentario, isChild = false, nestLevel = 0) {
     <div class="review-card ${childClass}" data-comment-id="${comentario.id}">
          <div class="review-header">
         <div class="reviewer-info">
-             ${isChild ? '<span class="reply-indicator">↳ Resposta</span>' : ''}
+             ${isChild ? '<span class="reply-indicator">↳</span>' : ''}
              <div class="reviewer-avatar">${comentario.userInitials || '?'}</div>
-             <span class="reviewer-date">${formatarData(comentario.createdAt)}${editedText}</span>
+             <div class="reviewer-details">
+                 <span class="reviewer-name">Anônimo</span>
+                 <span class="reviewer-separator">·</span>
+                 <span class="reviewer-date">${formatarData(comentario.createdAt)}${editedText}</span>
+             </div>
         </div>
          </div>
          <div class="review-content">${escapeHtml(comentario.texto)}</div>

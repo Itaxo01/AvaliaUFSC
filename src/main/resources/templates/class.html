@@ -36,7 +36,7 @@
                 
                 <!-- User Menu -->
                 <div class="user-menu">
-                    <a href="javascript:void(0)" class="user-avatar" id="userAvatar" th:title="${userName != null ? userName : 'Perfil'}">
+                    <a href="javascript:void(0)" class="user-avatar" id="userAvatar" title="Minha Conta">
                         <span th:text="${userInitial != null ? userInitial : 'U'}">U</span>
                     </a>
                     <button class="btn-logout" onclick="logout()" title="Sair">
@@ -80,10 +80,20 @@
         const searchToggle = document.getElementById('searchToggle');
         const navSearch = document.querySelector('.nav-search');
         if (searchToggle && navSearch) {
-            searchToggle.addEventListener('click', () => {
-                navSearch.classList.toggle('active');
-                if (navSearch.classList.contains('active')) {
+            searchToggle.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const isActive = navSearch.classList.toggle('active');
+                searchToggle.classList.toggle('active', isActive);
+                if (isActive) {
                     document.getElementById('searchInput').focus();
+                }
+            });
+            
+            // Close search when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!navSearch.contains(e.target) && !searchToggle.contains(e.target)) {
+                    navSearch.classList.remove('active');
+                    searchToggle.classList.remove('active');
                 }
             });
         }
@@ -120,7 +130,117 @@
             <span><span th:text="${disciplina.codigo}">INE5430</span> - <span th:text="${disciplina.nome}">Inteligência Artificial</span></span>
         </div>
 
-        <!-- Cabeçalho da Disciplina -->
+        <!-- Mobile Compact Header (visible only on mobile) -->
+        <div class="mobile-discipline-card">
+            <div class="mobile-card-main">
+                <div class="mobile-card-info">
+                    <h1>
+                        <span th:text="${disciplina.codigo}">INE5430</span> - 
+                        <span th:text="${disciplina.nome}">Inteligência Artificial</span>
+                    </h1>
+                    <div class="mobile-card-rating" onclick="openRatingModal(null)" title="Toque para avaliar">
+                        <div class="rating-stars discipline-rating-stars-mobile" data-context="discipline">
+                            <span class="star" data-rating="1">★</span>
+                            <span class="star" data-rating="2">★</span>
+                            <span class="star" data-rating="3">★</span>
+                            <span class="star" data-rating="4">★</span>
+                            <span class="star" data-rating="5">★</span>
+                        </div>
+                        <span class="mobile-rating-score">N/A</span>
+                        <span class="mobile-rating-count">(0)</span>
+                    </div>
+                </div>
+                <button class="btn-open-professors" id="btnOpenProfessors" aria-label="Selecionar Professor">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="9" cy="7" r="4"></circle>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                    </svg>
+                </button>
+            </div>
+            <div class="mobile-selected-professor" id="mobileSelectedProfessor">
+                <span class="selected-professor-label">Professor:</span>
+                <span class="selected-professor-name" id="selectedProfessorName">Nenhum selecionado</span>
+            </div>
+        </div>
+
+        <!-- Professor Sidebar (Mobile) -->
+        <div class="professor-sidebar-overlay" id="professorOverlay"></div>
+        <aside class="professor-sidebar" id="professorSidebar">
+            <div class="sidebar-header">
+                <h3>Professores</h3>
+                <button class="btn-close-sidebar" id="btnCloseSidebar" aria-label="Fechar">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+            <div class="sidebar-professors-list">
+                <div th:each="professor : ${professors}" class="sidebar-professor-item" th:data-professor-id="${professor.professorId}">
+                    <div class="sidebar-professor-info">
+                        <div class="sidebar-professor-avatar" th:text="${#strings.substring(professor.nome, 0, 1)}">J</div>
+                        <div class="sidebar-professor-details">
+                            <div class="sidebar-professor-name" th:text="${professor.nome}">Desconhecido</div>
+                            <div class="sidebar-professor-semester" th:if="${professor.semestre != null}" th:text="${professor.semestre}"></div>
+                        </div>
+                    </div>
+                    <div class="sidebar-professor-rating">
+                        <div class="rating-stars">
+                            <span class="star">★</span>
+                            <span class="star">★</span>
+                            <span class="star">★</span>
+                            <span class="star">★</span>
+                            <span class="star">★</span>
+                        </div>
+                        <span class="rating-value">N/A</span>
+                    </div>
+                </div>
+            </div>
+            <div class="sidebar-hint">
+                <p>Selecione um professor para ver e adicionar comentários</p>
+            </div>
+        </aside>
+        
+        <!-- Professor Sidebar Script (must be after sidebar elements) -->
+        <script>
+            (function() {
+                const btnOpenProfessors = document.getElementById('btnOpenProfessors');
+                const btnCloseSidebar = document.getElementById('btnCloseSidebar');
+                const professorSidebar = document.getElementById('professorSidebar');
+                const professorOverlay = document.getElementById('professorOverlay');
+                
+                // Expose to global scope for classRender.js
+                window.openProfessorSidebar = function() {
+                    if (professorSidebar && professorOverlay) {
+                        professorSidebar.classList.add('open');
+                        professorOverlay.classList.add('active');
+                        document.body.style.overflow = 'hidden';
+                    }
+                };
+                
+                window.closeProfessorSidebar = function() {
+                    if (professorSidebar && professorOverlay) {
+                        professorSidebar.classList.remove('open');
+                        professorOverlay.classList.remove('active');
+                        document.body.style.overflow = '';
+                    }
+                };
+                
+                if (btnOpenProfessors) {
+                    btnOpenProfessors.addEventListener('click', window.openProfessorSidebar);
+                }
+                if (btnCloseSidebar) {
+                    btnCloseSidebar.addEventListener('click', window.closeProfessorSidebar);
+                }
+                if (professorOverlay) {
+                    professorOverlay.addEventListener('click', window.closeProfessorSidebar);
+                }
+            })();
+        </script>
+
+        <!-- Cabeçalho da Disciplina (Desktop) -->
         <div class="discipline-header">
             <div class="discipline-info">
                 <h1>
@@ -299,5 +419,15 @@
     <script src="/js/avaliationHandler.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.6.2/dist/fuse.basic.min.js"></script>
     <script src="/js/searchBar.js?v=1.0.4"></script>
+
+    <!-- Footer -->
+    <footer class="site-footer">
+        <div class="footer-content">
+            <p class="footer-disclaimer">Este site não possui vínculo com a universidade e utiliza dados disponíveis no site da instituição.</p>
+<p>O código é open-source e está disponível em <a href="https://github.com/Itaxo01/AvaliaUFSC">https://github.com/Itaxo01/AvaliaUFSC</a></p>
+            
+            <p class="footer-contact">Notou algum erro? Entre em contato: <a href="mailto:kauan.fank@gmail.com">kauan.fank@gmail.com</a></p>
+        </div>
+    </footer>
 </body>
 </html>

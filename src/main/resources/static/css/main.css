@@ -108,6 +108,12 @@ body {
     border-color: var(--primary);
 }
 
+.search-toggle.active {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+}
+
 .search-toggle svg {
     width: 18px;
     height: 18px;
@@ -800,6 +806,63 @@ textarea:focus {
     .search-item-professor-match {
         margin-left: 0;
         margin-top: 4px;
+    }
+}
+
+/* ============================================
+   FOOTER
+   ============================================ */
+
+.site-footer {
+    background: var(--bg-light);
+    border-top: 1px solid var(--border-color);
+    padding: 24px 16px;
+    margin-top: auto;
+    text-align: center;
+}
+
+.footer-content {
+    max-width: 800px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.footer-content p {
+    margin: 0;
+    font-size: 12px;
+    color: var(--text-muted);
+    line-height: 1.5;
+}
+
+.footer-content a {
+    color: var(--primary-light);
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.footer-content a:hover {
+    color: var(--primary);
+    text-decoration: underline;
+}
+
+.footer-disclaimer {
+    font-style: italic;
+}
+
+.footer-contact {
+    margin-top: 4px;
+}
+
+/* Mobile footer */
+@media (max-width: 768px) {
+    .site-footer {
+        padding: 20px 12px;
+    }
+    
+    .footer-content p {
+        font-size: 11px;
     }
 }
 

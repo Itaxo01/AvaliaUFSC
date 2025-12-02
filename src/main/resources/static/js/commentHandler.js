@@ -131,6 +131,18 @@ async function submitComment(event) {
         commentForm.classList.add('form-disabled');
     }
     
+    // Helper function to reset form state on error
+    const resetFormState = () => {
+        if (submitButton) {
+            submitButton.disabled = false;
+            submitButton.classList.remove('btn-loading');
+            submitButton.textContent = submitButton.dataset.originalText || 'Publicar';
+        }
+        if (commentForm) {
+            commentForm.classList.remove('form-disabled');
+        }
+    };
+    
     // Check if we're replying or creating a new comment
     if (replyingToCommentId !== null) {
         // REPLY MODE
@@ -159,6 +171,7 @@ async function submitComment(event) {
             if (!response.ok) {
                 const errorText = await response.text();
                 showToast(parseErrorMessage(errorText) || 'Erro ao enviar resposta', 'error');
+                resetFormState();
                 return;
             }
             
@@ -171,16 +184,7 @@ async function submitComment(event) {
         } catch (error) {
             console.error('Erro ao enviar resposta:', error);
             showToast(parseErrorMessage(error.message) || 'Erro ao enviar resposta', 'error');
-            
-            // Re-enable form on error
-            if (submitButton) {
-                submitButton.disabled = false;
-                submitButton.classList.remove('btn-loading');
-                submitButton.textContent = submitButton.dataset.originalText || 'Enviar';
-            }
-            if (commentForm) {
-                commentForm.classList.remove('form-disabled');
-            }
+            resetFormState();
             return;
         }
     } else {
@@ -213,6 +217,7 @@ async function submitComment(event) {
             if (!response.ok) {
                 const errorText = await response.text();
                 showToast(parseErrorMessage(errorText) || 'Erro ao enviar comentário', 'error');
+                resetFormState();
                 return;
             }
             const result = await response.json();
@@ -224,16 +229,7 @@ async function submitComment(event) {
         } catch (error) {
             console.error('Erro ao enviar comentário:', error);
             showToast(parseErrorMessage(error.message) || 'Erro ao enviar comentário', 'error');
-            
-            // Re-enable form on error
-            if (submitButton) {
-                submitButton.disabled = false;
-                submitButton.classList.remove('btn-loading');
-                submitButton.textContent = submitButton.dataset.originalText || 'Enviar';
-            }
-            if (commentForm) {
-                commentForm.classList.remove('form-disabled');
-            }
+            resetFormState();
             return;
         }
     }

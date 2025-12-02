@@ -22,7 +22,6 @@ public record AdminCommentDTO(
 		Integer downVotes,
 		// Informações do usuário
 		String userEmail,
-		String userName,
 		String userMatricula,
 		String userInitials,
 		// Informações da disciplina
@@ -38,25 +37,24 @@ public record AdminCommentDTO(
 ) {
 
 	/**
-	 * Extrai as iniciais do nome do usuário
+	 * Extrai as iniciais do email do usuário (ex: "joao@email.com" -> "JO")
 	 */
-	private static String extractInitials(String nome) {
-		if (nome == null || nome.isBlank()) {
+	private static String extractInitials(String email) {
+		if (email == null || email.isBlank()) {
 			return "?";
 		}
-		String[] partes = nome.trim().split("\\s+");
-		if (partes.length >= 2) {
-			return (partes[0].substring(0, 1) + partes[partes.length - 1].substring(0, 1)).toUpperCase();
-		} else if (partes.length == 1 && partes[0].length() >= 2) {
-			return partes[0].substring(0, 2).toUpperCase();
-		} else if (partes.length == 1) {
-			return partes[0].substring(0, 1).toUpperCase();
+		// Pegar a parte antes do @
+		String localPart = email.split("@")[0];
+		if (localPart.length() >= 2) {
+			return localPart.substring(0, 2).toUpperCase();
+		} else if (localPart.length() == 1) {
+			return localPart.substring(0, 1).toUpperCase();
 		}
 		return "?";
 	}
 
 	public static AdminCommentDTO from(Comentario c) {
-		String initials = c.getUsuario() != null ? extractInitials(c.getUsuario().getNome()) : "?";
+		String initials = c.getUsuario() != null ? extractInitials(c.getUsuario().getEmail()) : "?";
 		
 		return new AdminCommentDTO(
 				c.getComentarioId(),
@@ -71,7 +69,6 @@ public record AdminCommentDTO(
 				c.getDownVotes() != null ? c.getDownVotes() : 0,
 				// Usuário
 				c.getUsuario() != null ? c.getUsuario().getEmail() : null,
-				c.getUsuario() != null ? c.getUsuario().getNome() : "Usuário removido",
 				c.getUsuario() != null ? c.getUsuario().getMatricula() : null,
 				initials,
 				// Disciplina

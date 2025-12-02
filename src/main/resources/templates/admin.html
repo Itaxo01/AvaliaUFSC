@@ -36,7 +36,7 @@
                 
                 <!-- User Menu -->
                 <div class="user-menu">
-                    <a href="javascript:void(0)" class="user-avatar" id="userAvatar" th:title="${userName != null ? userName : 'Perfil'}">
+                    <a href="javascript:void(0)" class="user-avatar" id="userAvatar" title="Minha Conta">
                         <span th:text="${userInitial != null ? userInitial : 'U'}">U</span>
                     </a>
                     <button class="btn-logout" onclick="logout()" title="Sair">
@@ -81,10 +81,20 @@
     const searchToggle = document.getElementById('searchToggle');
     const navSearch = document.querySelector('.nav-search');
     if (searchToggle && navSearch) {
-        searchToggle.addEventListener('click', () => {
-            navSearch.classList.toggle('active');
-            if (navSearch.classList.contains('active')) {
+        searchToggle.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const isActive = navSearch.classList.toggle('active');
+            searchToggle.classList.toggle('active', isActive);
+            if (isActive) {
                 document.getElementById('searchInput').focus();
+            }
+        });
+        
+        // Close search when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!navSearch.contains(e.target) && !searchToggle.contains(e.target)) {
+                navSearch.classList.remove('active');
+                searchToggle.classList.remove('active');
             }
         });
     }
@@ -296,5 +306,14 @@
     <script src="/js/admin.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.6.2/dist/fuse.basic.min.js"></script>
 	 <script src="/js/searchBar.js?v=1.0.4"></script>
+
+    <!-- Footer -->
+    <footer class="site-footer">
+        <div class="footer-content">
+            <p class="footer-disclaimer">Este site não possui vínculo com a universidade e utiliza dados disponíveis no site da instituição. O código é open-source e está disponível em <a href="https://github.com/Itaxo01/AvaliaUFSC">github/avaliaUFSC</a></div>p>
+            
+            <p class="footer-contact">Notou algum erro? Entre em contato: <a href="mailto:kauan.fank@gmail.com">kauan.fank@gmail.com</a></p>
+        </div>
+    </footer>
 </body>
 </html>
