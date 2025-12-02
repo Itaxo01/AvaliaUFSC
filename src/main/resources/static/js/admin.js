@@ -67,6 +67,27 @@ function showError(container, message) {
 	`;
 }
 
+// Helper para adicionar loading em botões de atualizar
+function setRefreshButtonLoading(tabName, isLoading) {
+	// Seleciona o botão de atualizar da aba correspondente
+	const tabPane = document.getElementById(`tab-${tabName}`);
+	if (!tabPane) return;
+	
+	const refreshBtn = tabPane.querySelector('.section-header .btn-secondary');
+	if (!refreshBtn) return;
+	
+	if (isLoading) {
+		refreshBtn.disabled = true;
+		refreshBtn.dataset.originalText = refreshBtn.innerHTML;
+		refreshBtn.innerHTML = '<span class="btn-spinner"></span> Atualizando...';
+	} else {
+		refreshBtn.disabled = false;
+		if (refreshBtn.dataset.originalText) {
+			refreshBtn.innerHTML = refreshBtn.dataset.originalText;
+		}
+	}
+}
+
 async function getCurrentUser() {
 	if (currentUser) return currentUser;
 	
@@ -129,10 +150,11 @@ async function loadUsersData(forceRefresh = false) {
 	if (!forceRefresh && loadedTabs.users) return;
 	
 	showLoading(container);
+	setRefreshButtonLoading('users', true);
 	
 	try {
 		const [usersResponse, user] = await Promise.all([
-			fetch('/api/admin/users', { credentials: 'same-origin' }),
+			fetch('/api/admin/users', { method: "POST", credentials: 'same-origin' }),
 			getCurrentUser()
 		]);
 		
@@ -149,6 +171,8 @@ async function loadUsersData(forceRefresh = false) {
 	} catch (error) {
 		console.error('Erro:', error);
 		showError(container, 'Erro ao carregar usuários. Clique em Atualizar para tentar novamente.');
+	} finally {
+		setRefreshButtonLoading('users', false);
 	}
 }
 
@@ -241,7 +265,7 @@ function attachUserButtonListeners(user, currentUser) {
 async function toggleAdmin(email, button) {
 	const originalText = button.textContent;
 	button.disabled = true;
-	button.textContent = 'Processando...';
+	button.innerHTML = '<span class="btn-spinner"></span> Processando...';
 	
 	const code = await httpPost("/api/admin/toggle-admin", JSON.stringify({ email }));
 	
@@ -274,16 +298,25 @@ async function deleteUser(email, nome, button) {
 	if (!confirm(`Confirma a exclusão do usuário ${nome}?\n\nO usuário poderá criar uma nova conta.`)) return;
 	
 	const originalText = button.textContent;
+	const row = document.getElementById(`user-row-${email}`);
+	
 	button.disabled = true;
-	button.textContent = 'Excluindo...';
+	button.innerHTML = '<span class="btn-spinner"></span> Excluindo...';
+	
+	// Adicionar visual de loading na row
+	if (row) row.classList.add('table-row-loading');
 	
 	const code = await httpPost("/api/admin/delete-user", JSON.stringify({ email }));
 	
 	button.disabled = false;
 	button.textContent = originalText;
+	if (row) row.classList.remove('table-row-loading');
 	
 	if (code === 200) {
-		document.getElementById(`user-row-${email}`)?.remove();
+		if (row) {
+			row.style.animation = 'fadeOut 0.3s ease-out';
+			setTimeout(() => row.remove(), 300);
+		}
 	} else if (code === 400) {
 		alert('Erro: Não é possível excluir o próprio usuário.');
 	} else if (code === 401) {
@@ -298,16 +331,25 @@ async function banUser(email, nome, button) {
 	if (motivo === null) return;
 	
 	const originalText = button.textContent;
+	const row = document.getElementById(`user-row-${email}`);
+	
 	button.disabled = true;
-	button.textContent = 'Banindo...';
+	button.innerHTML = '<span class="btn-spinner"></span> Banindo...';
+	
+	// Adicionar visual de loading na row
+	if (row) row.classList.add('table-row-loading');
 	
 	const code = await httpPost("/api/admin/ban-user", JSON.stringify({ email, motivo: motivo || null }));
 	
 	button.disabled = false;
 	button.textContent = originalText;
+	if (row) row.classList.remove('table-row-loading');
 	
 	if (code === 200) {
-		document.getElementById(`user-row-${email}`)?.remove();
+		if (row) {
+			row.style.animation = 'fadeOut 0.3s ease-out';
+			setTimeout(() => row.remove(), 300);
+		}
 		alert('Usuário banido com sucesso.');
 		// Recarregar banidos se já carregados
 		if (loadedTabs.banned) loadBannedData(true);
@@ -329,9 +371,10 @@ async function loadBannedData(forceRefresh = false) {
 	if (!forceRefresh && loadedTabs.banned) return;
 	
 	showLoading(container);
+	setRefreshButtonLoading('banned', true);
 	
 	try {
-		const response = await fetch('/api/admin/banned-users', { credentials: 'same-origin' });
+		const response = await fetch('/api/admin/banned-users', { method: "POST", credentials: 'same-origin' });
 		if (!response.ok) throw new Error('Erro ao carregar banidos');
 		
 		const bannedUsers = await response.json();
@@ -343,6 +386,8 @@ async function loadBannedData(forceRefresh = false) {
 	} catch (error) {
 		console.error('Erro:', error);
 		showError(container, 'Erro ao carregar usuários banidos.');
+	} finally {
+		setRefreshButtonLoading('banned', false);
 	}
 }
 
@@ -407,20 +452,31 @@ async function unbanUser(matricula, button) {
 	if (!confirm(`Desbanir a matrícula ${matricula}?`)) return;
 	
 	const originalText = button.textContent;
+	const row = document.getElementById(`banned-row-${matricula}`);
+	
 	button.disabled = true;
-	button.textContent = 'Removendo...';
+	button.innerHTML = '<span class="btn-spinner"></span> Removendo...';
+	
+	// Adicionar visual de loading na row
+	if (row) row.classList.add('table-row-loading');
 	
 	const code = await httpPost("/api/admin/unban-user", JSON.stringify({ matricula }));
 	
 	button.disabled = false;
 	button.textContent = originalText;
+	if (row) row.classList.remove('table-row-loading');
 	
 	if (code === 200) {
-		document.getElementById(`banned-row-${matricula}`)?.remove();
-		// Verificar se a tabela ficou vazia
-		const tbody = document.querySelector('#banned-content tbody');
-		if (tbody && tbody.children.length === 0) {
-			document.getElementById('banned-content').innerHTML = '<div class="no-users">✅ Nenhum usuário banido</div>';
+		if (row) {
+			row.style.animation = 'fadeOut 0.3s ease-out';
+			setTimeout(() => {
+				row.remove();
+				// Verificar se a tabela ficou vazia
+				const tbody = document.querySelector('#banned-content tbody');
+				if (tbody && tbody.children.length === 0) {
+					document.getElementById('banned-content').innerHTML = '<div class="no-users">✅ Nenhum usuário banido</div>';
+				}
+			}, 300);
 		}
 	} else if (code === 404) {
 		alert('Matrícula não está banida.');
@@ -440,9 +496,11 @@ async function loadAlarmingData(forceRefresh = false) {
 	if (!forceRefresh && loadedTabs.alarming) return;
 	
 	showLoading(container);
+	setRefreshButtonLoading('alarming', true);
 	
 	try {
 		const response = await fetch(`/api/admin/comments/alarming?page=${alarmingPage}&size=${pageSize}`, {
+			method: "POST",
 			credentials: 'same-origin'
 		});
 		
@@ -460,6 +518,8 @@ async function loadAlarmingData(forceRefresh = false) {
 	} catch (error) {
 		console.error('Erro:', error);
 		showError(container, 'Erro ao carregar comentários.');
+	} finally {
+		setRefreshButtonLoading('alarming', false);
 	}
 }
 
@@ -472,9 +532,11 @@ async function loadCommentsData(forceRefresh = false) {
 	if (!forceRefresh && loadedTabs.comments) return;
 	
 	showLoading(container);
+	setRefreshButtonLoading('comments', true);
 	
 	try {
 		const response = await fetch(`/api/admin/comments?page=${allCommentsPage}&size=${pageSize}`, {
+			method: "POST",
 			credentials: 'same-origin'
 		});
 		
@@ -492,6 +554,8 @@ async function loadCommentsData(forceRefresh = false) {
 	} catch (error) {
 		console.error('Erro:', error);
 		showError(container, 'Erro ao carregar comentários.');
+	} finally {
+		setRefreshButtonLoading('comments', false);
 	}
 }
 
@@ -533,7 +597,7 @@ function renderAdminCommentCard(comment, isAlarmingList) {
 	}
 	
 	const disciplinaInfo = comment.disciplinaNome 
-		? `<a href="/disciplina/${comment.disciplinaId}" class="context-link">${escapeHtml(comment.disciplinaNome)}</a>` 
+		? `<a href="/class/${comment.disciplinaId}" class="context-link">${escapeHtml(comment.disciplinaNome)}</a>` 
 		: 'N/A';
 	
 	const textoPreview = comment.texto && comment.texto.length > 300 
@@ -632,6 +696,14 @@ function renderPagination(containerId, data, type) {
 }
 
 function goToPage(type, page) {
+	// Desabilitar botões de paginação durante o carregamento
+	const paginationContainer = document.getElementById(type === 'alarming' ? 'alarming-pagination' : 'all-pagination');
+	const buttons = paginationContainer?.querySelectorAll('button');
+	buttons?.forEach(btn => {
+		btn.disabled = true;
+		btn.innerHTML = '<span class="btn-spinner"></span>';
+	});
+	
 	if (type === 'alarming') {
 		alarmingPage = page;
 		loadedTabs.alarming = false;
@@ -648,6 +720,15 @@ function goToPage(type, page) {
 async function markCommentAsSafe(commentId) {
 	if (!confirm('Marcar este comentário como seguro?')) return;
 	
+	// Encontrar o botão e adicionar estado de loading
+	const card = document.querySelector(`.admin-comment-card[data-comment-id="${commentId}"]`);
+	const button = card?.querySelector('.btn-success');
+	
+	if (button) {
+		button.disabled = true;
+		button.innerHTML = '<span class="btn-spinner"></span> Processando...';
+	}
+	
 	try {
 		const response = await fetch(`/api/admin/comments/${commentId}/mark-safe`, {
 			method: 'POST',
@@ -655,7 +736,6 @@ async function markCommentAsSafe(commentId) {
 		});
 		
 		if (response.ok) {
-			const card = document.querySelector(`.admin-comment-card[data-comment-id="${commentId}"]`);
 			if (card) {
 				card.style.animation = 'fadeOut 0.3s ease-out';
 				setTimeout(() => {
@@ -665,16 +745,38 @@ async function markCommentAsSafe(commentId) {
 				}, 300);
 			}
 		} else {
+			if (button) {
+				button.disabled = false;
+				button.innerHTML = '✓ Seguro';
+			}
 			alert('Erro ao marcar comentário como seguro.');
 		}
 	} catch (error) {
 		console.error('Erro:', error);
+		if (button) {
+			button.disabled = false;
+			button.innerHTML = '✓ Seguro';
+		}
 		alert('Erro ao marcar comentário como seguro.');
 	}
 }
 
 async function deleteAdminComment(commentId) {
 	if (!confirm('Deletar este comentário permanentemente?')) return;
+	
+	// Encontrar o botão e adicionar estado de loading
+	const card = document.querySelector(`.admin-comment-card[data-comment-id="${commentId}"]`);
+	const button = card?.querySelector('.btn-danger');
+	
+	if (button) {
+		button.disabled = true;
+		button.innerHTML = '<span class="btn-spinner"></span> Deletando...';
+	}
+	
+	// Adicionar overlay de loading no card
+	if (card) {
+		card.classList.add('card-loading');
+	}
 	
 	try {
 		const response = await fetch(`/api/admin/comments/${commentId}`, {
@@ -683,8 +785,8 @@ async function deleteAdminComment(commentId) {
 		});
 		
 		if (response.ok) {
-			const card = document.querySelector(`.admin-comment-card[data-comment-id="${commentId}"]`);
 			if (card) {
+				card.classList.remove('card-loading');
 				card.style.animation = 'fadeOut 0.3s ease-out';
 				setTimeout(() => {
 					card.remove();
@@ -694,10 +796,20 @@ async function deleteAdminComment(commentId) {
 				}, 300);
 			}
 		} else {
+			if (card) card.classList.remove('card-loading');
+			if (button) {
+				button.disabled = false;
+				button.innerHTML = '🗑️ Deletar';
+			}
 			alert('Erro ao deletar comentário.');
 		}
 	} catch (error) {
 		console.error('Erro:', error);
+		if (card) card.classList.remove('card-loading');
+		if (button) {
+			button.disabled = false;
+			button.innerHTML = '🗑️ Deletar';
+		}
 		alert('Erro ao deletar comentário.');
 	}
 }
@@ -705,6 +817,20 @@ async function deleteAdminComment(commentId) {
 async function banUserByComment(commentId, userName) {
 	const motivo = prompt(`Banir o usuário ${userName}?\n\nMotivo (opcional):`);
 	if (motivo === null) return;
+	
+	// Encontrar o botão e adicionar estado de loading
+	const card = document.querySelector(`.admin-comment-card[data-comment-id="${commentId}"]`);
+	const button = card?.querySelector('.btn-warning');
+	
+	if (button) {
+		button.disabled = true;
+		button.innerHTML = '<span class="btn-spinner"></span> Banindo...';
+	}
+	
+	// Adicionar overlay de loading no card
+	if (card) {
+		card.classList.add('card-loading');
+	}
 	
 	try {
 		const response = await fetch(`/api/admin/comments/${commentId}/ban-user`, {
@@ -715,6 +841,7 @@ async function banUserByComment(commentId, userName) {
 		});
 		
 		if (response.ok) {
+			if (card) card.classList.remove('card-loading');
 			alert('Usuário banido com sucesso.');
 			// Forçar reload
 			loadedTabs.alarming = false;
@@ -725,11 +852,21 @@ async function banUserByComment(commentId, userName) {
 			const activeTab = document.querySelector('.tab-btn.active')?.dataset.tab;
 			if (activeTab) loadTabData(activeTab);
 		} else {
+			if (card) card.classList.remove('card-loading');
+			if (button) {
+				button.disabled = false;
+				button.innerHTML = '⛔ Banir';
+			}
 			const error = await response.text();
 			alert('Erro ao banir usuário: ' + error);
 		}
 	} catch (error) {
 		console.error('Erro:', error);
+		if (card) card.classList.remove('card-loading');
+		if (button) {
+			button.disabled = false;
+			button.innerHTML = '⛔ Banir';
+		}
 		alert('Erro ao banir usuário.');
 	}
 }
@@ -744,8 +881,16 @@ async function loadScrapperData(forceRefresh = false) {
 	
 	showLoading(statusDiv);
 	
+	// Loading no botão de atualizar status
+	const refreshBtn = document.getElementById('refresh-status-btn');
+	if (refreshBtn) {
+		refreshBtn.disabled = true;
+		refreshBtn.dataset.originalText = refreshBtn.innerHTML;
+		refreshBtn.innerHTML = '<span class="btn-spinner"></span> Atualizando...';
+	}
+	
 	try {
-		const response = await fetch('/api/admin/scrapper/status', { credentials: 'same-origin' });
+		const response = await fetch('/api/admin/scrapper/status', { method: "POST", credentials: 'same-origin' });
 		
 		if (!response.ok) {
 			if (response.status === 401) {
@@ -762,6 +907,13 @@ async function loadScrapperData(forceRefresh = false) {
 	} catch (error) {
 		console.error('Erro:', error);
 		showError(statusDiv, `Erro ao carregar status: ${error.message}`);
+	} finally {
+		if (refreshBtn) {
+			refreshBtn.disabled = false;
+			if (refreshBtn.dataset.originalText) {
+				refreshBtn.innerHTML = refreshBtn.dataset.originalText;
+			}
+		}
 	}
 }
 
@@ -842,7 +994,7 @@ async function executeScrapper() {
 	
 	try {
 		submitButton.disabled = true;
-		submitButton.textContent = 'Executando...';
+		submitButton.innerHTML = '<span class="btn-spinner"></span> Executando...';
 		
 		const credentials = {
 			cagrUsername: formData.get('cagrUsername'),
@@ -918,7 +1070,7 @@ window.addEventListener('DOMContentLoaded', () => {
 // Carregar apenas a contagem de alarmantes para mostrar no badge
 async function fetchAlarmingCount() {
 	try {
-		const response = await fetch('/api/admin/comments/stats', { credentials: 'same-origin' });
+		const response = await fetch('/api/admin/comments/stats', { method: "POST", credentials: 'same-origin' });
 		if (response.ok) {
 			const stats = await response.json();
 			updateBadge('alarming-badge', stats.comentariosAlarmantes || 0, true);

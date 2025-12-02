@@ -575,9 +575,9 @@ function selecionarProfessor(professorId, professorNome) {
     // Atualizar professor selecionado
     professorSelecionado = professorId;
     
-    // Salvar no localStorage para persistir entre recarregamentos
+    // Salvar no sessionStorage para persistir durante refresh (limpa ao fechar aba)
     if (typeof CLASS_ID !== 'undefined') {
-        localStorage.setItem(`selectedProfessor_${CLASS_ID}`, JSON.stringify({ id: professorId, nome: professorNome }));
+        sessionStorage.setItem(`selectedProfessor_${CLASS_ID}`, JSON.stringify({ id: professorId, nome: professorNome }));
     }
     
     // ✅ FIX: Recalcular avaliações do professor dinamicamente do array global

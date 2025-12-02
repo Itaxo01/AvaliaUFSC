@@ -26,7 +26,7 @@ public record AdminCommentDTO(
 		String userMatricula,
 		String userInitials,
 		// Informações da disciplina
-		Long disciplinaId,
+		String disciplinaId,
 		String disciplinaNome,
 		// Informações do professor
 		String professorId,
@@ -75,7 +75,7 @@ public record AdminCommentDTO(
 				c.getUsuario() != null ? c.getUsuario().getMatricula() : null,
 				initials,
 				// Disciplina
-				c.getDisciplina() != null ? c.getDisciplina().getDisciplinaId() : null,
+				c.getDisciplina() != null ? c.getDisciplina().getCodigo() : null,
 				c.getDisciplina() != null ? c.getDisciplina().getNome() : null,
 				// Professor
 				c.getProfessor() != null ? c.getProfessor().getProfessorId() : null,

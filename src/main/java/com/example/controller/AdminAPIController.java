@@ -27,6 +27,7 @@ import com.example.DTO.AdminCommentDTO;
 import com.example.DTO.UserDTO;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.transaction.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -51,7 +52,7 @@ public class AdminAPIController {
 
 	private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(AdminAPIController.class);
 
-	@GetMapping("/users")
+	@PostMapping("/users")
 	public ResponseEntity<ArrayList<UserDTO>> getUsers(HttpServletRequest request) {
 		boolean auth = sessionService.verifySession(request);
 		if (!auth || !sessionService.currentUserIsAdmin(request)) {
@@ -66,6 +67,8 @@ public class AdminAPIController {
 		return ResponseEntity.ok(usersRet);
 
 	}
+
+	@Transactional
 	@PostMapping("/toggle-admin")
 	public ResponseEntity<String> toggleAdmin(HttpServletRequest request, @RequestBody Map<String,String> body) {
 		boolean auth = sessionService.verifySession(request);
@@ -85,6 +88,7 @@ public class AdminAPIController {
 		}
 	}
 
+	@Transactional
 	@PostMapping("/delete-user")
 	public ResponseEntity<String> deleteUser(HttpServletRequest request, @RequestBody Map<String,String> body) {
 		boolean auth = sessionService.verifySession(request);
@@ -107,6 +111,7 @@ public class AdminAPIController {
 		}
 	}
 
+	@Transactional
 	@PostMapping("/ban-user")
 	public ResponseEntity<String> banUser(HttpServletRequest request, @RequestBody Map<String,String> body) {
 		boolean auth = sessionService.verifySession(request);
@@ -138,6 +143,7 @@ public class AdminAPIController {
 		}
 	}
 
+	@Transactional
 	@PostMapping("/unban-user")
 	public ResponseEntity<String> unbanUser(HttpServletRequest request, @RequestBody Map<String,String> body) {
 		boolean auth = sessionService.verifySession(request);
@@ -167,7 +173,7 @@ public class AdminAPIController {
 		}
 	}
 
-	@GetMapping("/banned-users")
+	@PostMapping("/banned-users")
 	public ResponseEntity<?> getBannedUsers(HttpServletRequest request) {
 		boolean auth = sessionService.verifySession(request);
 		if (!auth || !sessionService.currentUserIsAdmin(request)) {
@@ -188,7 +194,8 @@ public class AdminAPIController {
 	/**
 	 * Buscar todos os comentários ordenados pelos mais recentes
 	 */
-	@GetMapping("/comments")
+	@Transactional
+	@PostMapping("/comments")
 	public ResponseEntity<?> getAllComments(
 			HttpServletRequest request,
 			@RequestParam(defaultValue = "0") int page,
@@ -222,7 +229,8 @@ public class AdminAPIController {
 	/**
 	 * Buscar comentários alarmantes (para revisão)
 	 */
-	@GetMapping("/comments/alarming")
+	@Transactional
+	@PostMapping("/comments/alarming")
 	public ResponseEntity<?> getAlarmingComments(
 			HttpServletRequest request,
 			@RequestParam(defaultValue = "0") int page,
@@ -256,7 +264,8 @@ public class AdminAPIController {
 	/**
 	 * Obter estatísticas de comentários
 	 */
-	@GetMapping("/comments/stats")
+	@Transactional
+	@PostMapping("/comments/stats")
 	public ResponseEntity<?> getCommentsStats(HttpServletRequest request) {
 		boolean auth = sessionService.verifySession(request);
 		if (!auth || !sessionService.currentUserIsAdmin(request)) {
@@ -278,6 +287,7 @@ public class AdminAPIController {
 	/**
 	 * Marcar comentário como seguro (remove da lista de alarmantes)
 	 */
+	@Transactional
 	@PostMapping("/comments/{id}/mark-safe")
 	public ResponseEntity<String> markCommentAsSafe(
 			HttpServletRequest request,
@@ -302,6 +312,7 @@ public class AdminAPIController {
 	/**
 	 * Deletar comentário
 	 */
+	@Transactional
 	@DeleteMapping("/comments/{id}")
 	public ResponseEntity<String> deleteComment(
 			HttpServletRequest request,
@@ -324,6 +335,7 @@ public class AdminAPIController {
 	/**
 	 * Banir usuário a partir do ID do comentário
 	 */
+	@Transactional
 	@PostMapping("/comments/{id}/ban-user")
 	public ResponseEntity<String> banUserByComment(
 			HttpServletRequest request,
@@ -362,7 +374,8 @@ public class AdminAPIController {
 	/**
 	 * Endpoint para obter status do scrapper de disciplinas
 	 */
-	@GetMapping("/scrapper/status")
+	@Transactional
+	@PostMapping("/scrapper/status")
 	public ResponseEntity<?> getScrapperStatus(HttpServletRequest request) {
 		boolean auth = sessionService.verifySession(request);
 		if (!auth || !sessionService.currentUserIsAdmin(request)) {
