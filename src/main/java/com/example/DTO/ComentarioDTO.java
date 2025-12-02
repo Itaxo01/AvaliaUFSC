@@ -22,6 +22,9 @@ public record ComentarioDTO (
 		  Boolean deleted,
 		  Long comentarioPaiId,
 		  String userInitials,
+		  Boolean alarmante,
+		  Boolean denunciado,
+		  Integer denunciasCount,
 		  List<ArquivoDTO> arquivos,
 		  List<ComentarioDTO> filhos) { 
 
@@ -62,6 +65,9 @@ public record ComentarioDTO (
 				false,
 				c.getPai() != null ? c.getPai().getComentarioId() : null,
 				initials,
+				c.getAlarmante(),
+				c.getDenunciado(),
+				c.getDenunciasCount(),
 				c.getArquivos() != null ? c.getArquivos().stream()
 						.map(arquivo -> ArquivoDTO.from(arquivo))
 						.toList() : List.of(),

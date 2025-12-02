@@ -45,4 +45,21 @@ public class SearchController {
         
         return ResponseEntity.ok(count);
     }
+
+    /**
+     * Returns the data hash from the last successful scrape.
+     * Used by frontend to check if cached data needs to be refreshed.
+     */
+    @GetMapping("/data-hash")
+    public ResponseEntity<String> getDataHash() {
+        ScrapperStatus status = scrapperStatusService.getUltimoStatus();
+        String hash = status.getDataHash();
+        
+        // Se não existe hash, gera um novo baseado nos dados atuais
+        if (hash == null || hash.isEmpty()) {
+            hash = status.gerarDataHash();
+        }
+        
+        return ResponseEntity.ok(hash);
+    }
 }

@@ -279,9 +279,9 @@ document.addEventListener('DOMContentLoaded', function() {
         // ✅ Selecionar primeiro professor automaticamente se nenhum estiver salvo
         let professorRestaurado = false;
         
-        // Tentar restaurar professor selecionado do localStorage
+        // Tentar restaurar professor selecionado do sessionStorage (persiste apenas na sessão/aba atual)
         if (typeof CLASS_ID !== 'undefined') {
-            const savedProfessor = localStorage.getItem(`selectedProfessor_${CLASS_ID}`);
+            const savedProfessor = sessionStorage.getItem(`selectedProfessor_${CLASS_ID}`);
             if (savedProfessor) {
                 try {
                     const { id, nome } = JSON.parse(savedProfessor);
@@ -295,12 +295,12 @@ document.addEventListener('DOMContentLoaded', function() {
                         selecionarProfessor(id, nome);
                         professorRestaurado = true;
                     } else {
-                        // Professor não existe mais, limpar localStorage
-                        localStorage.removeItem(`selectedProfessor_${CLASS_ID}`);
+                        // Professor não existe mais, limpar sessionStorage
+                        sessionStorage.removeItem(`selectedProfessor_${CLASS_ID}`);
                     }
                 } catch (e) {
                     console.error('Erro ao restaurar professor:', e);
-                    localStorage.removeItem(`selectedProfessor_${CLASS_ID}`);
+                    sessionStorage.removeItem(`selectedProfessor_${CLASS_ID}`);
                 }
             }
         }

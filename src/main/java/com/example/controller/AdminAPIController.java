@@ -1,21 +1,29 @@
 package com.example.controller;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.model.Comentario;
 import com.example.model.Usuario;
 import com.example.scrapper.DisciplinaScrapper;
+import com.example.service.ComentarioService;
 import com.example.service.ScrapperStatusService;
 import com.example.service.SessionService;
 import com.example.service.UsuarioService;
 
+import com.example.DTO.AdminCommentDTO;
 import com.example.DTO.UserDTO;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -38,6 +46,8 @@ public class AdminAPIController {
 	private DisciplinaScrapper disciplinaScrapper;
 	@Autowired
 	private ScrapperStatusService scrapperStatusService;
+	@Autowired
+	private ComentarioService comentarioService;
 
 	private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(AdminAPIController.class);
 
@@ -170,6 +180,182 @@ public class AdminAPIController {
 		} catch (Exception e) {
 			logger.error("Erro ao listar usuários banidos: " + e.getMessage());
 			return ResponseEntity.status(500).body("Erro ao listar usuários banidos.");
+		}
+	}
+
+	// ==================== COMENTÁRIOS ====================
+
+	/**
+	 * Buscar todos os comentários ordenados pelos mais recentes
+	 */
+	@GetMapping("/comments")
+	public ResponseEntity<?> getAllComments(
+			HttpServletRequest request,
+			@RequestParam(defaultValue = "0") int page,
+			@RequestParam(defaultValue = "20") int size) {
+		
+		boolean auth = sessionService.verifySession(request);
+		if (!auth || !sessionService.currentUserIsAdmin(request)) {
+			return ResponseEntity.status(403).build();
+		}
+		
+		try {
+			Page<Comentario> comentariosPage = comentarioService.buscarTodosComentariosOrdenados(page, size);
+			List<AdminCommentDTO> comentarios = comentariosPage.getContent().stream()
+					.map(AdminCommentDTO::from)
+					.toList();
+			
+			Map<String, Object> response = new HashMap<>();
+			response.put("content", comentarios);
+			response.put("totalElements", comentariosPage.getTotalElements());
+			response.put("totalPages", comentariosPage.getTotalPages());
+			response.put("currentPage", page);
+			response.put("size", size);
+			
+			return ResponseEntity.ok(response);
+		} catch (Exception e) {
+			logger.error("Erro ao buscar comentários: " + e.getMessage());
+			return ResponseEntity.status(500).body("Erro ao buscar comentários.");
+		}
+	}
+
+	/**
+	 * Buscar comentários alarmantes (para revisão)
+	 */
+	@GetMapping("/comments/alarming")
+	public ResponseEntity<?> getAlarmingComments(
+			HttpServletRequest request,
+			@RequestParam(defaultValue = "0") int page,
+			@RequestParam(defaultValue = "20") int size) {
+		
+		boolean auth = sessionService.verifySession(request);
+		if (!auth || !sessionService.currentUserIsAdmin(request)) {
+			return ResponseEntity.status(403).build();
+		}
+		
+		try {
+			Page<Comentario> comentariosPage = comentarioService.buscarComentariosAlarmantes(page, size);
+			List<AdminCommentDTO> comentarios = comentariosPage.getContent().stream()
+					.map(AdminCommentDTO::from)
+					.toList();
+			
+			Map<String, Object> response = new HashMap<>();
+			response.put("content", comentarios);
+			response.put("totalElements", comentariosPage.getTotalElements());
+			response.put("totalPages", comentariosPage.getTotalPages());
+			response.put("currentPage", page);
+			response.put("size", size);
+			
+			return ResponseEntity.ok(response);
+		} catch (Exception e) {
+			logger.error("Erro ao buscar comentários alarmantes: " + e.getMessage());
+			return ResponseEntity.status(500).body("Erro ao buscar comentários alarmantes.");
+		}
+	}
+
+	/**
+	 * Obter estatísticas de comentários
+	 */
+	@GetMapping("/comments/stats")
+	public ResponseEntity<?> getCommentsStats(HttpServletRequest request) {
+		boolean auth = sessionService.verifySession(request);
+		if (!auth || !sessionService.currentUserIsAdmin(request)) {
+			return ResponseEntity.status(403).build();
+		}
+		
+		try {
+			Map<String, Object> stats = new HashMap<>();
+			stats.put("totalComentarios", comentarioService.contarTodosComentarios());
+			stats.put("comentariosAlarmantes", comentarioService.contarAlarmantes());
+			
+			return ResponseEntity.ok(stats);
+		} catch (Exception e) {
+			logger.error("Erro ao buscar estatísticas: " + e.getMessage());
+			return ResponseEntity.status(500).body("Erro ao buscar estatísticas.");
+		}
+	}
+
+	/**
+	 * Marcar comentário como seguro (remove da lista de alarmantes)
+	 */
+	@PostMapping("/comments/{id}/mark-safe")
+	public ResponseEntity<String> markCommentAsSafe(
+			HttpServletRequest request,
+			@PathVariable Long id) {
+		
+		boolean auth = sessionService.verifySession(request);
+		if (!auth || !sessionService.currentUserIsAdmin(request)) {
+			return ResponseEntity.status(403).build();
+		}
+		
+		try {
+			comentarioService.marcarComoSeguro(id);
+			return ResponseEntity.ok("Comentário marcado como seguro.");
+		} catch (IllegalArgumentException e) {
+			return ResponseEntity.status(404).body("Comentário não encontrado.");
+		} catch (Exception e) {
+			logger.error("Erro ao marcar comentário como seguro: " + e.getMessage());
+			return ResponseEntity.status(500).body("Erro ao marcar comentário como seguro.");
+		}
+	}
+
+	/**
+	 * Deletar comentário
+	 */
+	@DeleteMapping("/comments/{id}")
+	public ResponseEntity<String> deleteComment(
+			HttpServletRequest request,
+			@PathVariable Long id) {
+		
+		boolean auth = sessionService.verifySession(request);
+		if (!auth || !sessionService.currentUserIsAdmin(request)) {
+			return ResponseEntity.status(403).build();
+		}
+		
+		try {
+			comentarioService.deletar(id);
+			return ResponseEntity.ok("Comentário deletado.");
+		} catch (Exception e) {
+			logger.error("Erro ao deletar comentário: " + e.getMessage());
+			return ResponseEntity.status(500).body("Erro ao deletar comentário.");
+		}
+	}
+
+	/**
+	 * Banir usuário a partir do ID do comentário
+	 */
+	@PostMapping("/comments/{id}/ban-user")
+	public ResponseEntity<String> banUserByComment(
+			HttpServletRequest request,
+			@PathVariable Long id,
+			@RequestBody Map<String, String> body) {
+		
+		boolean auth = sessionService.verifySession(request);
+		if (!auth || !sessionService.currentUserIsAdmin(request)) {
+			return ResponseEntity.status(403).build();
+		}
+		
+		String motivo = body.get("motivo");
+		
+		try {
+			Usuario usuario = comentarioService.getUsuarioDoComentario(id);
+			if (usuario == null) {
+				return ResponseEntity.status(404).body("Usuário do comentário não encontrado.");
+			}
+			
+			String adminEmail = sessionService.getCurrentUser(request);
+			boolean success = userService.banirUsuario(usuario.getEmail(), adminEmail, motivo);
+			
+			if (!success) {
+				return ResponseEntity.status(400).body("Não foi possível banir o usuário.");
+			}
+			
+			return ResponseEntity.ok("Usuário banido com sucesso.");
+		} catch (IllegalArgumentException e) {
+			return ResponseEntity.status(404).body("Comentário não encontrado.");
+		} catch (Exception e) {
+			logger.error("Erro ao banir usuário: " + e.getMessage());
+			return ResponseEntity.status(500).body("Erro ao banir usuário.");
 		}
 	}
 

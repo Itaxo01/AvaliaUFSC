@@ -834,6 +834,19 @@
     color: #d93a00;
 }
 
+.report-btn:hover {
+    color: #dc3545;
+}
+
+.report-btn.reported {
+    color: #28a745;
+    cursor: default;
+}
+
+.report-btn.reported:hover {
+    background: transparent;
+}
+
 /* Separator between vote container and action buttons */
 .action-separator {
     width: 1px;

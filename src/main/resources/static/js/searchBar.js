@@ -3,6 +3,7 @@ class DisciplinasCache {
         this.cacheKey = 'disciplinas_search_data';
         this.timestampKey = 'disciplinas_cache_timestamp';
         this.versionKey = 'disciplinas_cache_version';
+        this.dataHashKey = 'disciplinas_data_hash';
         
         // Cache duration: 6 months (in milliseconds)
         this.cacheDuration = 6 * 30 * 24 * 60 * 60 * 1000; // 6 months
@@ -16,6 +17,14 @@ class DisciplinasCache {
      */
     async getDisciplinas() {
         try {
+            // First, check if data hash has changed (indicates new scrapper run)
+            const hashChanged = await this.checkDataHashChanged();
+            
+            if (hashChanged) {
+                console.log('🔄 Data hash changed, refreshing cache...');
+                return await this.forceRefresh();
+            }
+            
             // Check if we have valid cached data
             const cachedData = this.getCachedData();
 
@@ -44,31 +53,39 @@ class DisciplinasCache {
             throw error;
         }
     }
-    
+
     /**
-     * Validate if cached count matches server's expected count
+     * Check if the data hash from the server has changed
+     * Returns true if hash changed (need to refresh), false otherwise
      */
-    async validateCacheCount(cachedLength) {
+    async checkDataHashChanged() {
         try {
-            const response = await fetch('/api/search/count');
+            const response = await fetch('/api/search/data-hash');
             
             if (!response.ok) {
-                console.warn('⚠️ Could not validate cache count, assuming valid');
-                return true; // Don't invalidate if validation fails
-            }
-            
-            const expectedCount = await response.json();
-            
-            if (cachedLength !== expectedCount) {
-                console.log(`📊 Count mismatch: cached=${cachedLength}, expected=${expectedCount}`);
+                console.warn('⚠️ Could not fetch data hash, skipping validation');
                 return false;
             }
             
-            return true;
+            const serverHash = await response.text();
+            const cachedHash = localStorage.getItem(this.dataHashKey);
+            
+            if (!cachedHash) {
+                // No cached hash, store the new one
+                localStorage.setItem(this.dataHashKey, serverHash);
+                return false;
+            }
+            
+            if (cachedHash !== serverHash) {
+                console.log(`📊 Data hash changed: cached=${cachedHash.substring(0, 8)}..., server=${serverHash.substring(0, 8)}...`);
+                return true;
+            }
+            
+            return false;
             
         } catch (error) {
-            console.warn('⚠️ Cache validation error:', error);
-            return true; // Don't invalidate on error
+            console.warn('⚠️ Error checking data hash:', error);
+            return false;
         }
     }
 
@@ -133,6 +150,9 @@ class DisciplinasCache {
             localStorage.setItem(this.timestampKey, Date.now().toString());
             localStorage.setItem(this.versionKey, this.currentVersion);
             
+            // Also update the data hash from server
+            this.updateStoredDataHash();
+            
         } catch (error) {
             console.error('❌ Error saving to cache:', error);
             
@@ -146,10 +166,27 @@ class DisciplinasCache {
                     localStorage.setItem(this.cacheKey, JSON.stringify(data));
                     localStorage.setItem(this.timestampKey, Date.now().toString());
                     localStorage.setItem(this.versionKey, this.currentVersion);
+                    this.updateStoredDataHash();
                 } catch (retryError) {
                     console.error('❌ Failed to cache even after clearing:', retryError);
                 }
             }
+        }
+    }
+
+    /**
+     * Update the stored data hash from the server
+     */
+    async updateStoredDataHash() {
+        try {
+            const response = await fetch('/api/search/data-hash');
+            if (response.ok) {
+                const hash = await response.text();
+                localStorage.setItem(this.dataHashKey, hash);
+                console.log(`✅ Data hash updated: ${hash.substring(0, 8)}...`);
+            }
+        } catch (error) {
+            console.warn('⚠️ Could not update data hash:', error);
         }
     }
 
@@ -192,6 +229,7 @@ class DisciplinasCache {
         localStorage.removeItem(this.cacheKey);
         localStorage.removeItem(this.timestampKey);
         localStorage.removeItem(this.versionKey);
+        localStorage.removeItem(this.dataHashKey);
         console.log('🗑️ Cache cleared');
     }
 
@@ -201,6 +239,7 @@ class DisciplinasCache {
     getCacheInfo() {
         const timestamp = localStorage.getItem(this.timestampKey);
         const version = localStorage.getItem(this.versionKey);
+        const dataHash = localStorage.getItem(this.dataHashKey);
         const hasData = !!localStorage.getItem(this.cacheKey);
         
         if (!timestamp || !hasData) {
@@ -213,6 +252,7 @@ class DisciplinasCache {
         return {
             cached: true,
             version: version,
+            dataHash: dataHash ? dataHash.substring(0, 16) + '...' : null,
             age: age,
             ageMinutes: Math.round(age / 1000 / 60),
             ageDays: Math.round(age / 1000 / 60 / 60 / 24),

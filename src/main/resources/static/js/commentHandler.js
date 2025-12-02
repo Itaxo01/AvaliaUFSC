@@ -895,3 +895,83 @@ async function deleteComment(comentarioId) {
         showToast(parseErrorMessage(error.message) || 'Erro ao deletar comentário', 'error');
     }
 }
+
+// ============================================
+// REPORT COMMENT
+// ============================================
+
+/**
+ * Denunciar um comentário
+ */
+async function reportComment(comentarioId) {
+    // Confirmação antes de denunciar
+    if (!confirm('Tem certeza que deseja denunciar este comentário?\n\nUm administrador irá revisar este comentário.')) {
+        return;
+    }
+    
+    // Find the comment card and report button
+    const commentCard = document.querySelector(`[data-comment-id="${comentarioId}"]`);
+    const reportButton = commentCard?.querySelector('.report-btn');
+    
+    // Add loading state to button
+    if (reportButton) {
+        reportButton.disabled = true;
+        reportButton.classList.add('btn-loading');
+        const originalHTML = reportButton.innerHTML;
+        reportButton.dataset.originalHtml = originalHTML;
+        reportButton.innerHTML = '<span>Denunciando...</span>';
+    }
+    
+    try {
+        console.log(`Denunciando comentário ${comentarioId}...`);
+        
+        const response = await fetch(`/api/comentario/denunciar/${comentarioId}`, {
+            method: 'POST'
+        });
+        
+        if (!response.ok) {
+            const errorText = await response.text();
+            
+            // Restore button state on error
+            if (reportButton) {
+                reportButton.disabled = false;
+                reportButton.classList.remove('btn-loading');
+                reportButton.innerHTML = reportButton.dataset.originalHtml;
+            }
+            
+            showToast(parseErrorMessage(errorText) || 'Erro ao denunciar comentário', 'error');
+            return;
+        }
+        
+        const result = await response.json();
+        console.log('Comentário denunciado com sucesso:', result);
+        
+        // Update button to show reported state
+        if (reportButton) {
+            reportButton.disabled = true;
+            reportButton.classList.remove('btn-loading');
+            reportButton.classList.add('reported');
+            reportButton.innerHTML = `
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                    <polyline points="22 4 12 14.01 9 11.01"/>
+                </svg>
+                <span>denunciado</span>
+            `;
+        }
+        
+        showToast('Comentário denunciado! Um administrador irá revisar.', 'success');
+        
+    } catch (error) {
+        console.error('Erro ao denunciar comentário:', error);
+        
+        // Restore button state on error
+        if (reportButton) {
+            reportButton.disabled = false;
+            reportButton.classList.remove('btn-loading');
+            reportButton.innerHTML = reportButton.dataset.originalHtml;
+        }
+        
+        showToast(parseErrorMessage(error.message) || 'Erro ao denunciar comentário', 'error');
+    }
+}

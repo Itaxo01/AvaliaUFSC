@@ -92,6 +92,16 @@ public class Comentario {
 	@Column(name = "edited_at")
 	private Instant editedAt;
 
+	// ✅ Campos para sistema de revisão de comentários
+	@Column(name = "alarmante", nullable = false)
+	private Boolean alarmante = false;
+
+	@Column(name = "denunciado", nullable = false)
+	private Boolean denunciado = false;
+
+	@Column(name = "denuncias_count")
+	private Integer denunciasCount = 0;
+
 
 	// ✅ Relacionamento direto com Disciplina e Professor (comentários agora são apenas para professores)
 	@ManyToOne(fetch = FetchType.LAZY)
@@ -174,6 +184,15 @@ public class Comentario {
 
 	public Instant getEditedAt() { return editedAt; }
 	public void setEditedAt(Instant editedAt) { this.editedAt = editedAt; }
+
+	public Boolean getAlarmante() { return alarmante; }
+	public void setAlarmante(Boolean alarmante) { this.alarmante = alarmante; }
+
+	public Boolean getDenunciado() { return denunciado; }
+	public void setDenunciado(Boolean denunciado) { this.denunciado = denunciado; }
+
+	public Integer getDenunciasCount() { return denunciasCount; }
+	public void setDenunciasCount(Integer denunciasCount) { this.denunciasCount = denunciasCount; }
 
 	public Integer hasVoted(String userEmail) {
 		if(votes.containsKey(userEmail)){
@@ -258,6 +277,40 @@ public class Comentario {
 
 	public boolean hasArquivos() {
 		return arquivos != null && !arquivos.isEmpty();
+	}
+
+	/**
+	 * Verifica se o comentário é incomum (alarmante por natureza):
+	 * - Mais de 150 caracteres
+	 * - Possui arquivos anexados
+	 */
+	public boolean isIncomum() {
+		return (texto != null && texto.length() > 150) || hasArquivos();
+	}
+
+	/**
+	 * Marca o comentário como alarmante automaticamente se for incomum ou denunciado
+	 */
+	public void atualizarStatusAlarmante() {
+		this.alarmante = isIncomum() || (denunciado != null && denunciado);
+	}
+
+	/**
+	 * Adiciona uma denúncia ao comentário
+	 */
+	public void adicionarDenuncia() {
+		this.denunciasCount = (this.denunciasCount != null ? this.denunciasCount : 0) + 1;
+		this.denunciado = true;
+		this.alarmante = true;
+	}
+
+	/**
+	 * Marca o comentário como seguro (remove da lista de alarmantes)
+	 */
+	public void marcarComoSeguro() {
+		this.alarmante = false;
+		this.denunciado = false;
+		this.denunciasCount = 0;
 	}
 
 	public void addUserVote(String userEmail, Boolean isUpVote) throws Exception {

@@ -55,41 +55,147 @@
     <div class="admin-container">
         <div class="admin-header">
             <h1>Painel Administrativo</h1>
-            <p>Gerencie usuários e permissões do sistema</p>
+            <p>Gerencie usuários, comentários e permissões do sistema</p>
         </div>
 
-        <div class="users-section">
-            <div class="section-header">
-                <h2>Usuários Cadastrados</h2>
-            </div>
-
+        <!-- Sistema de Abas -->
+        <div class="admin-tabs">
+            <button class="tab-btn active" data-tab="users" onclick="switchTab('users')">
+                <span class="tab-icon">👥</span>
+                <span class="tab-text">Usuários</span>
+                <span class="tab-badge" id="users-badge" style="display: none;"></span>
+            </button>
+            <button class="tab-btn" data-tab="banned" onclick="switchTab('banned')">
+                <span class="tab-icon">🚫</span>
+                <span class="tab-text">Banidos</span>
+                <span class="tab-badge" id="banned-badge" style="display: none;"></span>
+            </button>
+            <button class="tab-btn" data-tab="alarming" onclick="switchTab('alarming')">
+                <span class="tab-icon">⚠️</span>
+                <span class="tab-text">Revisão</span>
+                <span class="tab-badge warning" id="alarming-badge" style="display: none;"></span>
+            </button>
+            <button class="tab-btn" data-tab="comments" onclick="switchTab('comments')">
+                <span class="tab-icon">💬</span>
+                <span class="tab-text">Comentários</span>
+                <span class="tab-badge" id="comments-badge" style="display: none;"></span>
+            </button>
+            <button class="tab-btn" data-tab="scrapper" onclick="switchTab('scrapper')">
+                <span class="tab-icon">🔄</span>
+                <span class="tab-text">Scrapper</span>
+            </button>
         </div>
 
-        <div class="banned-users-section">
-            <div class="section-header">
-                <h2>Usuários Banidos</h2>
-            </div>
-
-        </div>
-
-        <div class="scrapper-section">
-            <div class="section-header">
-                <h2>Scrapper de Disciplinas</h2>
-                <p>Importe disciplinas e professores do sistema CAGR/UFSC</p>
-            </div>
+        <!-- Conteúdo das Abas -->
+        <div class="tab-content">
             
-            <div class="scrapper-controls">
-                <button id="execute-scrapper-btn" class="btn btn-primary" onclick="showCredentialsModal()">
-                    Executar Scrapping
-                </button>
-                <button id="refresh-status-btn" class="btn btn-secondary" onclick="refreshScrapperStatus()">
-                    Atualizar Status
-                </button>
+            <!-- Aba: Usuários Cadastrados -->
+            <div class="tab-pane active" id="tab-users">
+                <div class="section-header">
+                    <div class="section-title">
+                        <h2>Usuários Cadastrados</h2>
+                        <p>Gerencie os usuários do sistema</p>
+                    </div>
+                    <button class="btn btn-secondary" onclick="loadUsersData(true)">🔄 Atualizar</button>
+                </div>
+                <div class="tab-body" id="users-content">
+                    <div class="tab-placeholder">
+                        <div class="placeholder-icon">👥</div>
+                        <p>Clique para carregar os usuários</p>
+                        <button class="btn btn-primary" onclick="loadUsersData()">Carregar Usuários</button>
+                    </div>
+                </div>
             </div>
-            
-            <div class="scrapper-status" id="scrapper-status">
-                <div class="status-loading">Carregando status...</div>
+
+            <!-- Aba: Usuários Banidos -->
+            <div class="tab-pane" id="tab-banned">
+                <div class="section-header">
+                    <div class="section-title">
+                        <h2>Usuários Banidos</h2>
+                        <p>Matrículas bloqueadas de criar novas contas</p>
+                    </div>
+                    <button class="btn btn-secondary" onclick="loadBannedData(true)">🔄 Atualizar</button>
+                </div>
+                <div class="tab-body" id="banned-content">
+                    <div class="tab-placeholder">
+                        <div class="placeholder-icon">🚫</div>
+                        <p>Clique para carregar os usuários banidos</p>
+                        <button class="btn btn-primary" onclick="loadBannedData()">Carregar Banidos</button>
+                    </div>
+                </div>
             </div>
+
+            <!-- Aba: Comentários para Revisão -->
+            <div class="tab-pane" id="tab-alarming">
+                <div class="section-header">
+                    <div class="section-title">
+                        <h2>Comentários para Revisão</h2>
+                        <p>Comentários longos (+150 chars), com arquivos ou denunciados</p>
+                    </div>
+                    <div class="section-controls">
+                        <span class="comments-count" id="alarming-count"></span>
+                        <button class="btn btn-secondary" onclick="loadAlarmingData(true)">🔄 Atualizar</button>
+                    </div>
+                </div>
+                <div class="tab-body" id="alarming-content">
+                    <div class="tab-placeholder">
+                        <div class="placeholder-icon">⚠️</div>
+                        <p>Clique para carregar comentários para revisão</p>
+                        <button class="btn btn-primary" onclick="loadAlarmingData()">Carregar Comentários</button>
+                    </div>
+                </div>
+                <div class="pagination-controls" id="alarming-pagination"></div>
+            </div>
+
+            <!-- Aba: Todos os Comentários -->
+            <div class="tab-pane" id="tab-comments">
+                <div class="section-header">
+                    <div class="section-title">
+                        <h2>Todos os Comentários</h2>
+                        <p>Lista completa ordenada pelos mais recentes</p>
+                    </div>
+                    <div class="section-controls">
+                        <span class="comments-count" id="all-comments-count"></span>
+                        <button class="btn btn-secondary" onclick="loadCommentsData(true)">🔄 Atualizar</button>
+                    </div>
+                </div>
+                <div class="tab-body" id="comments-content">
+                    <div class="tab-placeholder">
+                        <div class="placeholder-icon">💬</div>
+                        <p>Clique para carregar todos os comentários</p>
+                        <button class="btn btn-primary" onclick="loadCommentsData()">Carregar Comentários</button>
+                    </div>
+                </div>
+                <div class="pagination-controls" id="all-pagination"></div>
+            </div>
+
+            <!-- Aba: Scrapper -->
+            <div class="tab-pane" id="tab-scrapper">
+                <div class="section-header">
+                    <div class="section-title">
+                        <h2>Scrapper de Disciplinas</h2>
+                        <p>Importe disciplinas e professores do sistema CAGR/UFSC</p>
+                    </div>
+                </div>
+                <div class="tab-body" id="scrapper-content">
+                    <div class="scrapper-controls">
+                        <button id="execute-scrapper-btn" class="btn btn-primary" onclick="showCredentialsModal()">
+                            ▶️ Executar Scrapping
+                        </button>
+                        <button id="refresh-status-btn" class="btn btn-secondary" onclick="loadScrapperData(true)">
+                            🔄 Atualizar Status
+                        </button>
+                    </div>
+                    <div class="scrapper-status" id="scrapper-status">
+                        <div class="tab-placeholder">
+                            <div class="placeholder-icon">🔄</div>
+                            <p>Clique para carregar o status do scrapper</p>
+                            <button class="btn btn-primary" onclick="loadScrapperData()">Carregar Status</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
     
