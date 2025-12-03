@@ -4,9 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Disciplina - AvaliaUFSC</title>
-    <link rel="stylesheet" href="/css/main.css">
-    <link rel="stylesheet" href="/css/class.css">
-    <link rel="stylesheet" href="/css/loading.css">
+    <link rel="stylesheet" th:href="@{/css/main.css(v=${v})}">
+    <link rel="stylesheet" th:href="@{/css/class.css(v=${v})}">
+    <link rel="stylesheet" th:href="@{/css/loading.css(v=${v})}">
 </head>
 <body>
     <!-- Navbar -->
@@ -428,12 +428,12 @@
         const HAS_PROFESSORS = /*[[${hasProfessors}]]*/ false;
     </script>
     <!-- Modular JS files for class page -->
-    <script src="/js/classRender.js"></script>
-    <script src="/js/commentRender.js"></script>
-    <script src="/js/commentHandler.js"></script>
-    <script src="/js/avaliationHandler.js"></script>
+    <script th:src="@{/js/classRender.js(v=${v})}"></script>
+    <script th:src="@{/js/commentRender.js(v=${v})}"></script>
+    <script th:src="@{/js/commentHandler.js(v=${v})}"></script>
+    <script th:src="@{/js/avaliationHandler.js(v=${v})}"></script>
     <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.6.2/dist/fuse.basic.min.js"></script>
-    <script src="/js/searchBar.js?v=1.0.4"></script>
+    <script th:src="@{/js/searchBar.js(v=${v})}"></script>
 
     <!-- Footer -->
     <footer class="site-footer">

@@ -40,7 +40,6 @@ public class AvaliacaoService {
 		  logger.debug("A");
         Avaliacao avaliacaoSalva = avaliacaoRepository.save(avaliacao);
 
-        // Marcar disciplina como avaliada no mapa curricular
 		  logger.debug("Avaliação salva com ID: " + avaliacaoSalva.getId());
         
         return avaliacaoSalva;

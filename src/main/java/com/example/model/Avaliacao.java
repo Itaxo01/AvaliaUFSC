@@ -27,7 +27,7 @@ import jakarta.persistence.Table;
 @Table(
 	name = "avaliacoes",
 	indexes = {
-		@Index(name="uniqueTupleDisplinaUsusuarioProfessor" ,columnList = "disciplina, usuario, professor", unique = true)
+		@Index(name="uniqueTupleDisplinaUsusuarioProfessor" ,columnList = "disciplina_id, user_email, professor_id", unique = true)
 	})
 public class Avaliacao {
 	@Id
@@ -35,14 +35,15 @@ public class Avaliacao {
 	private Long id;
 
 	@ManyToOne
+	@JoinColumn(name = "professor_id")
 	private Professor professor;
 
 	@ManyToOne
-	@JoinColumn
+	@JoinColumn(name = "disciplina_id")
 	private Disciplina disciplina;
 
 	@ManyToOne(fetch = FetchType.LAZY, optional = false)
-	@JoinColumn(name = "user_email", nullable = false)
+	@JoinColumn(name = "user_email", referencedColumnName = "email", nullable = false)
 	private Usuario usuario;
 
 	@Column(name = "nota", nullable = false)

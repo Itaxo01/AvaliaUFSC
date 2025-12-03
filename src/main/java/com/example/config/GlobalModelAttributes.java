@@ -1,6 +1,7 @@
 package com.example.config;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -23,6 +24,22 @@ public class GlobalModelAttributes {
 
     @Autowired
     private UsuarioService userService;
+
+    /**
+     * Versão dos assets estáticos (CSS, JS) para cache busting.
+     * Altere este valor em application-*.properties para forçar atualização do cache.
+     * Configuração: app.assets.version=2.0.1
+     */
+    @Value("${app.assets.version:2.0.0}")
+    private String assetsVersion;
+
+    /**
+     * Disponibiliza a versão dos assets em todas as views como ${v}
+     */
+    @ModelAttribute("v")
+    public String getAssetsVersion() {
+        return assetsVersion;
+    }
 
 
     /**

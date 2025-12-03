@@ -4,12 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Perfil - AvaliaUFSC</title>
-    <link rel="stylesheet" href="/css/main.css">
-    <link rel="stylesheet" href="/css/user.css">
-    <link rel="stylesheet" href="/css/loading.css">
+    <link rel="stylesheet" th:href="@{/css/main.css(v=${v})}">
+    <link rel="stylesheet" th:href="@{/css/user.css(v=${v})}">
+    <link rel="stylesheet" th:href="@{/css/loading.css(v=${v})}">
 </head>
 <body>
-    <script src="/js/user.js"></script>
+    <script th:src="@{/js/user.js(v=${v})}"></script>
 
     <nav class="navbar">
         <div class="nav-container">
@@ -272,7 +272,7 @@
         </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.6.2/dist/fuse.basic.min.js"></script>
-	 <script src="/js/searchBar.js?v=1.0.4"></script>
+	 <script th:src="@{/js/searchBar.js(v=${v})}"></script>
 
     <!-- Footer -->
     <footer class="site-footer">

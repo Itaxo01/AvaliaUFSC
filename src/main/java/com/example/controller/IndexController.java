@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 
-import com.example.model.MapaCurricular;
 import com.example.model.Usuario;
 import com.example.model.Disciplina;
 import com.example.service.SessionService;
@@ -45,7 +44,6 @@ public class IndexController {
 			return "redirect:/login";
 		}
 		
-		// Buscar mapa curricular do usuário
 		Usuario usuario = userService.getUsuario(userEmail);
 
 		if(usuario == null) { // possivel erro fatal

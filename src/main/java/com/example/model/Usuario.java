@@ -42,10 +42,6 @@ public class Usuario{
 
 	@OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true)
 	@OnDelete(action = OnDeleteAction.CASCADE)
-	private Set<MapaCurricular> mapaCurricular = new HashSet<>();
-
-	@OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true)
-	@OnDelete(action = OnDeleteAction.CASCADE)
 	private Set<Comentario> comentarios = new HashSet<>();
 
 	@Column(name = "is_admin")
@@ -87,9 +83,6 @@ public class Usuario{
 
 	public Set<Avaliacao> getAvaliacoes() { return avaliacoes; }
 	public void setAvaliacoes(Set<Avaliacao> avaliacoes) { this.avaliacoes = avaliacoes; }
-
-	public Set<MapaCurricular> getMapaCurricular() { return mapaCurricular; }
-	public void setMapaCurricular(Set<MapaCurricular> mapaCurricular) { this.mapaCurricular = mapaCurricular; }
 
 	public Set<Comentario> getComentarios() { return comentarios; }
 	public void setComentarios(Set<Comentario> comentarios) { this.comentarios = comentarios; }

@@ -1,14 +1,5 @@
--- Script de migração para adicionar colunas de revisão de comentários
--- Este script é executado automaticamente se você usar Flyway,
--- ou pode ser executado manualmente no banco de dados
-
--- Adicionar colunas (caso não existam - para PostgreSQL)
-ALTER TABLE comentarios ADD COLUMN IF NOT EXISTS alarmante BOOLEAN DEFAULT FALSE;
-ALTER TABLE comentarios ADD COLUMN IF NOT EXISTS denunciado BOOLEAN DEFAULT FALSE;
-ALTER TABLE comentarios ADD COLUMN IF NOT EXISTS denuncias_count INTEGER DEFAULT 0;
-
--- Para H2 (desenvolvimento), as colunas são criadas automaticamente pelo Hibernate
--- Este script só precisa atualizar os dados existentes
+-- Script de migração para atualizar dados de comentários existentes
+-- As colunas alarmante, denunciado e denuncias_count já foram criadas na V1
 
 -- Atualizar comentários com texto longo (> 150 caracteres) como alarmantes
 UPDATE comentarios 

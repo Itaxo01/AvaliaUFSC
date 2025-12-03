@@ -39,10 +39,6 @@ public class Disciplina {
     @Column(nullable = false, length = 300)
     private String nome;
 	 
-	 @OneToMany(mappedBy = "disciplina", cascade = CascadeType.ALL, orphanRemoval = true)
-    @OnDelete(action = OnDeleteAction.CASCADE)
-    private Set<MapaCurricular> mapaCurricular = new HashSet<>();
-
     @OneToMany(mappedBy = "disciplina", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<ProfessorDisciplina> professorDisciplinas = new HashSet<>();
 
@@ -69,9 +65,6 @@ public class Disciplina {
     public String getNome() { return nome; }
     public void setNome(String nome) { this.nome = nome; }
     
-	 public Set<MapaCurricular> getMapaCurricular() { return mapaCurricular; }
-	 public void setMapaCurricular(Set<MapaCurricular> mapaCurriculars) { this.mapaCurricular = mapaCurriculars; }
-
     /** Lista de relacionamentos professor-disciplina. */
     public Set<ProfessorDisciplina> getProfessorDisciplinas() { 
 		return professorDisciplinas; 
