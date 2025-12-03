@@ -56,9 +56,13 @@ function renderCommentCard(comentario, isChild = false, nestLevel = 0) {
     <div class="review-card ${childClass}" data-comment-id="${comentario.id}">
          <div class="review-header">
         <div class="reviewer-info">
-             ${isChild ? '<span class="reply-indicator">↳ Resposta</span>' : ''}
+             ${isChild ? '<span class="reply-indicator">↳</span>' : ''}
              <div class="reviewer-avatar">${comentario.userInitials || '?'}</div>
-             <span class="reviewer-date">${formatarData(comentario.createdAt)}${editedText}</span>
+             <div class="reviewer-details">
+                 <span class="reviewer-name">Anônimo</span>
+                 <span class="reviewer-separator">·</span>
+                 <span class="reviewer-date">${formatarData(comentario.createdAt)}${editedText}</span>
+             </div>
         </div>
          </div>
          <div class="review-content">${escapeHtml(comentario.texto)}</div>
@@ -95,6 +99,15 @@ function renderCommentCard(comentario, isChild = false, nestLevel = 0) {
                     <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
                 </svg>
                 <span>editar</span>
+            </button>
+            ` : ''}
+            ${!isOwner ? `
+            <button class="review-action-btn report-btn" onclick="reportComment(${comentario.id})" title="Denunciar comentário">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/>
+                    <line x1="4" y1="22" x2="4" y2="15"/>
+                </svg>
+                <span>denunciar</span>
             </button>
             ` : ''}
             ${canDelete ? `

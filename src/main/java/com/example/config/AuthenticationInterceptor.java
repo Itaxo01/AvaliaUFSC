@@ -25,7 +25,7 @@ public class AuthenticationInterceptor implements HandlerInterceptor {
 
     // URLs that require authentication but not admin
     private static final String[] USER_URLS = {
-        "/index", "/user", "/class", "/class/**", "/api/me", "/logout"
+        "/index", "/user", "/user/**", "/class", "/class/**", "/api/me", "/logout"
     };
 
     // URLs that require admin privileges

@@ -2,6 +2,8 @@ package com.example.model;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import java.security.MessageDigest;
+import java.nio.charset.StandardCharsets;
 
 @Entity
 @Table(name = "scrapper_status")
@@ -35,10 +37,13 @@ public class ScrapperStatus {
     private int totalExecucoes = 0;
 
     @Column(name = "created_at", updatable = false)
-    private LocalDateTime creattedAt;
+    private LocalDateTime createdAt;
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    @Column(name = "data_hash", length = 64)
+    private String dataHash;
 
     public ScrapperStatus() {}
 
@@ -92,8 +97,47 @@ public class ScrapperStatus {
         this.updatedAt = LocalDateTime.now();
     }
 
-    public LocalDateTime getCreattedAt() { return creattedAt; }
+    public LocalDateTime getCreatedAt() { return createdAt; }
     public LocalDateTime getUpdatedAt() { return updatedAt; }
+
+    public String getDataHash() { return dataHash; }
+    public void setDataHash(String dataHash) { this.dataHash = dataHash; }
+
+    /**
+     * Gera um hash SHA-256 baseado nas informações do último scrapper com sucesso.
+     * Este hash é usado pelo frontend para verificar se os dados mudaram.
+     */
+    public String gerarDataHash() {
+        try {
+            String dados = String.format("%d-%d-%s", 
+                disciplinasCapturadas, 
+                professoresCapturados,
+                ultimoSucesso != null ? ultimoSucesso.toString() : "null"
+            );
+            
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] hashBytes = digest.digest(dados.getBytes(StandardCharsets.UTF_8));
+            
+            StringBuilder hexString = new StringBuilder();
+            for (byte b : hashBytes) {
+                String hex = Integer.toHexString(0xff & b);
+                if (hex.length() == 1) hexString.append('0');
+                hexString.append(hex);
+            }
+            
+            return hexString.toString();
+        } catch (Exception e) {
+            // Fallback simples se o hash falhar
+            return String.valueOf(System.currentTimeMillis());
+        }
+    }
+
+    /**
+     * Atualiza o hash dos dados após um scrapper bem-sucedido.
+     */
+    public void atualizarDataHash() {
+        this.dataHash = gerarDataHash();
+    }
 
     public void incrementarTotalExecucoes() {
         this.totalExecucoes++;
@@ -115,6 +159,8 @@ public class ScrapperStatus {
             this.ultimoSucesso = LocalDateTime.now();
             this.disciplinasCapturadas = disciplinasCapturadas;
             this.professoresCapturados = professoresCapturados;
+            // Atualiza o hash dos dados quando o scrapper é bem-sucedido
+            this.atualizarDataHash();
         } else {
             if(erro != null) this.ultimoErro = erro;
             else this.ultimoErro = "Erro desconhecido";

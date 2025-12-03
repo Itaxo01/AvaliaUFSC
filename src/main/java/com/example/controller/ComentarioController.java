@@ -96,6 +96,7 @@ public class ComentarioController {
 
 			// Cria os arquivos associados ao comentário, se houver
 			if (files != null && files.length > 0) {
+				boolean hasValidFiles = false;
 				for (MultipartFile file : files) {
 					if (!file.isEmpty()) {
 						if (file.getSize() > 5 * 1024 * 1024) { // 5MB
@@ -104,11 +105,18 @@ public class ComentarioController {
 
 						try {
 							arquivoService.salvarArquivo(file, comentario);
+							hasValidFiles = true;
 							logger.info("Arquivo " + file.getOriginalFilename() + " salvo com sucesso.");
 						} catch (Exception e) {
 							return ResponseEntity.status(500).body("Erro ao salvar o arquivo " + file.getOriginalFilename() + ": " + e.getMessage());
 						}
 					}
+				}
+				
+				// Marcar como alarmante se tiver arquivos
+				if (hasValidFiles) {
+					comentario.setAlarmante(true);
+					comentarioService.salvar(comentario);
 				}
 			}
 
@@ -117,8 +125,7 @@ public class ComentarioController {
 			return ResponseEntity.ok(Map.of(
 				"success", true,
 				"message", "Comentário publicado com sucesso",
-				"comentarioId", comentario.getComentarioId(),
-				"nomeUsuario", usuario.getNome() != null ? usuario.getNome() : "Usuário"
+				"comentarioId", comentario.getComentarioId()
 			));
 
 		} catch (Exception e) {
@@ -179,6 +186,7 @@ public class ComentarioController {
 
 			// Cria os arquivos associados ao comentário, se houver
 			if (files != null && files.length > 0) {
+				boolean hasValidFiles = false;
 				for (MultipartFile file : files) {
 					if (!file.isEmpty()) {
 						if (file.getSize() > 5 * 1024 * 1024) { // 5MB
@@ -187,11 +195,18 @@ public class ComentarioController {
 
 						try {
 							arquivoService.salvarArquivo(file, comentario);
+							hasValidFiles = true;
 							logger.info("Arquivo " + file.getOriginalFilename() + " salvo com sucesso.");
 						} catch (Exception e) {
 							return ResponseEntity.status(500).body("Erro ao salvar o arquivo " + file.getOriginalFilename() + ": " + e.getMessage());
 						}
 					}
+				}
+				
+				// Marcar como alarmante se tiver arquivos
+				if (hasValidFiles) {
+					comentario.setAlarmante(true);
+					comentarioService.salvar(comentario);
 				}
 			}
 
@@ -200,8 +215,7 @@ public class ComentarioController {
 			return ResponseEntity.ok(Map.of(
 				"success", true,
 				"message", "Comentário publicado com sucesso",
-				"comentarioId", comentario.getComentarioId(),
-				"nomeUsuario", usuario.getNome() != null ? usuario.getNome() : "Usuário"
+				"comentarioId", comentario.getComentarioId()
 			));
 
 		} catch (Exception e) {
@@ -375,6 +389,42 @@ public class ComentarioController {
 		
 		} catch(Exception e) {
 			return ResponseEntity.status(500).body("Erro ao editar comentário: " + e.getMessage());
+		}
+	}
+
+	/**
+	 * Denunciar um comentário
+	 */
+	@PostMapping("/denunciar/{id}")
+	@ResponseBody
+	public ResponseEntity<?> denunciar(@PathVariable("id") Long comentarioId, HttpServletRequest request) {
+		String userEmail = sessionService.getCurrentUser(request);
+		
+		if (userEmail == null) {
+			return ResponseEntity.status(401).body("Usuário não autenticado.");
+		}
+		
+		logger.debug("Denunciando comentário ID " + comentarioId + " por usuário " + userEmail);
+		
+		try {
+			boolean denunciaAdicionada = comentarioService.denunciar(comentarioId, userEmail);
+			
+			if (!denunciaAdicionada) {
+				return ResponseEntity.status(409).body(Map.of(
+					"success", false,
+					"message", "Você já denunciou este comentário anteriormente."
+				));
+			}
+			
+			return ResponseEntity.ok(Map.of(
+				"success", true,
+				"message", "Comentário denunciado com sucesso. Um administrador irá revisar."
+			));
+		} catch (IllegalArgumentException e) {
+			return ResponseEntity.status(404).body("Comentário não encontrado.");
+		} catch (Exception e) {
+			logger.error("Erro ao denunciar comentário: " + e.getMessage());
+			return ResponseEntity.status(500).body("Erro ao denunciar comentário: " + e.getMessage());
 		}
 	}
 	

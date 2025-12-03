@@ -12,13 +12,19 @@ console.log('✅ avaliationHandler.js carregado');
 
 // ✅ Make stars clickable for rating submission
 function setupInteractiveStars() {
-    // Discipline stars
+    // Discipline stars (Desktop)
     const disciplineStars = document.querySelector('.discipline-rating-stars');
     if (disciplineStars) {
-        makeStarsInteractive(disciplineStars, null); // null = disciplina (sem professor)
+        makeStarsInteractive(disciplineStars, null);
     }
     
-    // Professor stars
+    // Discipline stars (Mobile)
+    const disciplineStarsMobile = document.querySelector('.discipline-rating-stars-mobile');
+    if (disciplineStarsMobile) {
+        makeStarsInteractive(disciplineStarsMobile, null);
+    }
+    
+    // Professor stars (Desktop)
     const professorItems = document.querySelectorAll('.professor-item');
     professorItems.forEach((item, index) => {
         const starsContainer = item.querySelector('.rating-stars');
@@ -26,6 +32,23 @@ function setupInteractiveStars() {
             const prof = PROFESSORES_DATA[index];
             const profId = prof.id || prof.professorId || prof.ID || index;
             makeStarsInteractive(starsContainer, profId);
+        }
+    });
+    
+    // Professor stars (Mobile Sidebar)
+    setupSidebarProfessorStars();
+}
+
+// ✅ Setup sidebar professor stars (mobile)
+function setupSidebarProfessorStars() {
+    const sidebarItems = document.querySelectorAll('.sidebar-professor-item');
+    sidebarItems.forEach((item) => {
+        const profId = item.dataset.professorId;
+        const starsContainer = item.querySelector('.sidebar-professor-rating .rating-stars');
+        
+        if (starsContainer && profId) {
+            // Make stars clickable in sidebar
+            makeSidebarStarsClickable(starsContainer, profId, item);
         }
     });
 }
@@ -41,8 +64,8 @@ function makeStarsInteractive(starsContainer, professorId) {
     const freshStars = starsContainer.querySelectorAll('.star');
     
     // Get initial average rating to display
-    const avgRating = parseFloat(starsContainer.closest('.discipline-rating, .professor-rating')
-        ?.querySelector('.rating-value, .rating-score')?.textContent) || 0;
+    const avgRating = parseFloat(starsContainer.closest('.discipline-rating, .professor-rating, .mobile-card-rating')
+        ?.querySelector('.rating-value, .rating-score, .mobile-rating-score')?.textContent) || 0;
     
     // Check if current user has voted
     const userRating = getUserCurrentRating(professorId);
@@ -69,11 +92,80 @@ function makeStarsInteractive(starsContainer, professorId) {
         });
     }
     
-    // ✅ REMOVED: Direct star clicking - now only visual display
-    // Stars are no longer clickable; users must use the "Adicionar avaliação" link
+    // ✅ Make stars clickable to open rating modal
     freshStars.forEach(star => {
-        star.style.cursor = 'default'; // Change cursor to indicate not clickable
+        star.style.cursor = 'pointer';
+        star.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation(); // Prevent bubbling to parent elements
+            openRatingModal(professorId);
+        });
     });
+    
+    // Also make the container itself clickable
+    starsContainer.style.cursor = 'pointer';
+    starsContainer.addEventListener('click', (e) => {
+        // Only trigger if clicking on container directly, not on stars
+        if (e.target === starsContainer) {
+            e.preventDefault();
+            e.stopPropagation();
+            openRatingModal(professorId);
+        }
+    });
+}
+
+// ✅ Make sidebar stars clickable (for mobile professor sidebar)
+function makeSidebarStarsClickable(starsContainer, professorId, parentItem) {
+    // Clone stars to remove existing listeners
+    starsContainer.querySelectorAll('.star').forEach((oldStar) => {
+        const newStar = oldStar.cloneNode(true);
+        oldStar.parentNode.replaceChild(newStar, oldStar);
+    });
+    
+    // Re-query stars
+    const freshStars = starsContainer.querySelectorAll('.star');
+    
+    // Get average rating for this professor
+    const avgRating = parseFloat(starsContainer.closest('.sidebar-professor-rating')
+        ?.querySelector('.rating-value')?.textContent) || 0;
+    
+    // Check if user has voted
+    const userRating = getUserCurrentRating(professorId);
+    const hasUserVoted = userRating !== null;
+    
+    // Display the average rating
+    if (avgRating > 0) {
+        freshStars.forEach((star, index) => {
+            star.classList.remove('filled', 'half', 'hover', 'user-voted', 'half-user-voted');
+            if (avgRating >= index + 1) {
+                star.classList.add('filled');
+                if (hasUserVoted) star.classList.add('user-voted');
+            } else if (avgRating >= index + 0.5) {
+                star.classList.add(hasUserVoted ? 'half-user-voted' : 'half');
+            }
+        });
+    }
+    
+    // Make stars and container clickable
+    freshStars.forEach(star => {
+        star.style.cursor = 'pointer';
+        star.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation(); // CRITICAL: Stop propagation to prevent professor selection
+            openRatingModal(professorId);
+        });
+    });
+    
+    // Make the rating container itself clickable
+    const ratingContainer = starsContainer.closest('.sidebar-professor-rating');
+    if (ratingContainer) {
+        ratingContainer.style.cursor = 'pointer';
+        ratingContainer.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation(); // CRITICAL: Stop propagation
+            openRatingModal(professorId);
+        });
+    }
 }
 
 function highlightStars(stars, rating) {
@@ -121,17 +213,38 @@ function calcularStats(avaliacoes) {
 
 // Atualizar header da disciplina
 function atualizarDisciplina(stats, comentarios) {
-    document.querySelector('.discipline-rating .rating-score').textContent = 
-        stats.total > 0 ? stats.media.toFixed(1) : 'N/A';
+    // Desktop header
+    const desktopRatingScore = document.querySelector('.discipline-rating .rating-score');
+    if (desktopRatingScore) {
+        desktopRatingScore.textContent = stats.total > 0 ? stats.media.toFixed(1) : 'N/A';
+    }
     
     const ratingCountElement = document.querySelector('.discipline-rating .rating-count');
-    ratingCountElement.textContent = 
-        `${stats.total} ${stats.total === 1 ? 'avaliação' : 'avaliações'}`;
+    if (ratingCountElement) {
+        ratingCountElement.textContent = 
+            `${stats.total} ${stats.total === 1 ? 'avaliação' : 'avaliações'}`;
+    }
     
-    // Add "remove rating" link if user has voted
-    addRemoveRatingLink(ratingCountElement, null);
+    const desktopStars = document.querySelector('.discipline-rating .rating-stars');
+    if (desktopStars) {
+        preencherEstrelas(desktopStars, stats.media);
+    }
     
-    preencherEstrelas(document.querySelector('.discipline-rating .rating-stars'), stats.media);
+    // ✅ Mobile card - atualizar também
+    const mobileRatingScore = document.querySelector('.mobile-rating-score');
+    if (mobileRatingScore) {
+        mobileRatingScore.textContent = stats.total > 0 ? stats.media.toFixed(1) : 'N/A';
+    }
+    
+    const mobileRatingCount = document.querySelector('.mobile-rating-count');
+    if (mobileRatingCount) {
+        mobileRatingCount.textContent = `(${stats.total})`;
+    }
+    
+    const mobileStars = document.querySelector('.discipline-rating-stars-mobile');
+    if (mobileStars) {
+        preencherEstrelas(mobileStars, stats.media);
+    }
     
     // Mostrar comentários da disciplina
     mostrarComentarios(comentarios, null);
@@ -149,12 +262,22 @@ function atualizarProfessor(index, stats) {
     ratingCountElement.textContent = 
         `${stats.total} ${stats.total === 1 ? 'avaliação' : 'avaliações'}`;
     
-    // Add "remove rating" link if user has voted for this professor
-    const prof = PROFESSORES_DATA[index];
-    const profId = prof?.id || prof?.professorId || prof?.ID || index;
-    addRemoveRatingLink(ratingCountElement, profId);
-    
     preencherEstrelas(professorItem.querySelector('.rating-stars'), stats.media);
+}
+
+// ✅ Atualizar rating na sidebar mobile
+function updateSidebarProfessorRating(sidebarRating, stats) {
+    if (!sidebarRating) return;
+    
+    const ratingValue = sidebarRating.querySelector('.rating-value');
+    if (ratingValue) {
+        ratingValue.textContent = stats.total > 0 ? stats.media.toFixed(1) : 'N/A';
+    }
+    
+    const ratingStars = sidebarRating.querySelector('.rating-stars');
+    if (ratingStars) {
+        preencherEstrelas(ratingStars, stats.media);
+    }
 }
 
 // Preencher estrelas
@@ -172,135 +295,6 @@ function preencherEstrelas(container, nota) {
 // ============================================
 
 /**
- * Add "remove rating" or "add rating" link below rating count
- */
-function addRemoveRatingLink(ratingCountElement, professorId) {
-    // Check if user has voted for this context
-    const userRating = getUserCurrentRating(professorId);
-    
-    // Remove existing link if present
-    const existingLink = ratingCountElement.parentElement.querySelector('.remove-rating-link, .add-rating-link');
-    if (existingLink) {
-        existingLink.remove();
-    }
-    
-    if (userRating !== null) {
-        // User has rated - show remove link
-        const removeLink = document.createElement('div');
-        removeLink.className = 'remove-rating-link';
-        // ✅ FIX: Use quotes to preserve professorId as string (prevents "0882497234989588" from becoming 882497234989588)
-        removeLink.innerHTML = `<span onclick="removeRating(event, '${professorId}')">Remover minha avaliação</span>`;
-        ratingCountElement.parentElement.appendChild(removeLink);
-    } else {
-        // User hasn't rated - show add link
-        const addLink = document.createElement('div');
-        addLink.className = 'add-rating-link';
-        addLink.innerHTML = `<span onclick="openRatingModal('${professorId}')">Adicionar avaliação</span>`;
-        ratingCountElement.parentElement.appendChild(addLink);
-    }
-}
-
-/**
- * Remove user's rating
- */
-async function removeRating(event, professorId = null) {
-    
-    if (!confirm('Tem certeza que deseja remover sua avaliação?')) {
-        return;
-    }
-    
-    // Find the clicked element and its parent link
-    const clickedSpan = event?.target;
-    const removeLink = clickedSpan?.closest('.remove-rating-link');
-    
-    // Find the rating section based on context
-    let ratingSection = null;
-    if (professorId && professorId !== 'null') {
-        // For professor rating - find the professor card
-        const professorCards = document.querySelectorAll('.professor-item');
-        for (let card of professorCards) {
-            const profData = PROFESSORES_DATA[Array.from(professorCards).indexOf(card)];
-            if (profData) {
-                const profId = String(profData.id || profData.professorId || profData.ID || '');
-                if (profId === String(professorId)) {
-                    ratingSection = card.querySelector('.professor-rating');
-                    break;
-                }
-            }
-        }
-    } else {
-        // For discipline rating
-        ratingSection = document.querySelector('.discipline-rating');
-    }
-    
-    // Disable the link immediately to prevent double-clicks
-    if (removeLink) {
-        removeLink.style.pointerEvents = 'none';
-        removeLink.style.opacity = '0.6';
-        const originalHtml = clickedSpan.innerHTML;
-        clickedSpan.dataset.originalHtml = originalHtml;
-        clickedSpan.innerHTML = '<span class="loading-inline" style="display: inline-flex; align-items: center; gap: 4px;"><div class="spinner spinner-small"></div><span>Removendo...</span></span>';
-    }
-    
-    // Add subtle visual feedback to rating section (no overlay)
-    if (ratingSection) {
-        ratingSection.style.opacity = '0.7';
-        ratingSection.style.transition = 'opacity 0.2s';
-    }
-    
-    try {
-        const formData = new FormData();
-        formData.append('disciplinaId', CLASS_ID);
-        if (professorId && professorId !== 'null') {
-            formData.append('professorId', professorId);
-        }
-        
-        const response = await fetch('/api/avaliacao/rating/delete', {
-            method: 'POST',
-            body: formData
-        });
-        
-        if (!response.ok) {
-            const errorText = await response.text();
-            
-            // Restore UI on error
-            if (removeLink && clickedSpan.dataset.originalHtml) {
-                removeLink.style.pointerEvents = '';
-                removeLink.style.opacity = '';
-                clickedSpan.innerHTML = clickedSpan.dataset.originalHtml;
-            }
-            if (ratingSection) {
-                ratingSection.style.opacity = '';
-            }
-            
-            showToast(parseErrorMessage(errorText) || 'Erro ao remover avaliação', 'error');
-            return;
-        }
-        
-        console.log('Avaliação removida com sucesso');
-        
-        // Keep loading state while page reloads
-        // Reload page to show updated ratings
-        window.location.reload();
-        
-    } catch (error) {
-        console.error('Erro ao remover avaliação:', error);
-        
-        // Restore UI on error
-        if (removeLink && clickedSpan.dataset.originalHtml) {
-            removeLink.style.pointerEvents = '';
-            removeLink.style.opacity = '';
-            clickedSpan.innerHTML = clickedSpan.dataset.originalHtml;
-        }
-        if (ratingSection) {
-            ratingSection.style.opacity = '';
-        }
-        
-        showToast(parseErrorMessage(error.message) || 'Erro ao remover avaliação', 'error');
-    }
-}
-
-/**
  * Open rating modal for user to select stars
  */
 function openRatingModal(professorId = null) {
@@ -315,6 +309,10 @@ function openRatingModal(professorId = null) {
                 <span class="rating-modal-close" onclick="closeRatingModal()">&times;</span>
                 <h3 id="ratingModalTitle">Avaliar</h3>
                 <p id="ratingModalSubtitle">Selecione sua nota:</p>
+                <div class="rating-modal-previous" id="ratingModalPrevious" style="display: none;">
+                    <span class="previous-rating-label">Sua nota anterior:</span>
+                    <span class="previous-rating-value" id="previousRatingValue"></span>
+                </div>
                 <div class="rating-modal-stars" id="ratingModalStars">
                     <span class="modal-star" data-rating="1">★</span>
                     <span class="modal-star" data-rating="2">★</span>
@@ -343,20 +341,47 @@ function openRatingModal(professorId = null) {
     
     // Update title based on context
     const titleElement = document.getElementById('ratingModalTitle');
+    const subtitleElement = document.getElementById('ratingModalSubtitle');
+    const previousRatingDiv = document.getElementById('ratingModalPrevious');
+    const previousRatingValue = document.getElementById('previousRatingValue');
+    
+    // Check if user already voted
+    const userCurrentRating = getUserCurrentRating(professorId);
+    const hasUserVoted = userCurrentRating !== null;
+    
     if (professorId !== null && professorId !== 'null' && PROFESSORES_DATA) {
         const prof = PROFESSORES_DATA.find(p => {
             const profId = p.id || p.professorId || p.ID;
             return String(profId) === String(professorId);
         });
         const profNome = prof?.nome || prof?.name || 'Professor';
-        titleElement.textContent = `Avaliar ${profNome}`;
+        titleElement.textContent = hasUserVoted ? `Editar avaliação - ${profNome}` : `Avaliar ${profNome}`;
     } else {
-        titleElement.textContent = 'Avaliar Disciplina';
+        titleElement.textContent = hasUserVoted ? 'Editar avaliação - Disciplina' : 'Avaliar Disciplina';
     }
     
-    // Reset stars
-    const modalStars = document.querySelectorAll('.modal-star');
-    modalStars.forEach(star => {
+    // Update subtitle and show previous rating if user already voted
+    if (hasUserVoted) {
+        subtitleElement.textContent = 'Modifique sua nota:';
+        previousRatingDiv.style.display = 'flex';
+        // Show previous rating as stars
+        previousRatingValue.innerHTML = '★'.repeat(userCurrentRating) + '☆'.repeat(5 - userCurrentRating);
+    } else {
+        subtitleElement.textContent = 'Selecione sua nota:';
+        previousRatingDiv.style.display = 'none';
+    }
+    
+    // Reset stars - clone to remove old event listeners
+    const starsContainer = document.getElementById('ratingModalStars');
+    const modalStars = starsContainer.querySelectorAll('.modal-star');
+    modalStars.forEach((oldStar) => {
+        const newStar = oldStar.cloneNode(true);
+        oldStar.parentNode.replaceChild(newStar, oldStar);
+    });
+    
+    // Re-query and setup fresh stars
+    const freshStars = starsContainer.querySelectorAll('.modal-star');
+    freshStars.forEach(star => {
         star.classList.remove('selected', 'hover');
         
         // Add hover and click events
@@ -371,20 +396,36 @@ function openRatingModal(professorId = null) {
         });
     });
     
-    // Reset on mouse leave
-    const starsContainer = document.getElementById('ratingModalStars');
-    starsContainer.addEventListener('mouseleave', function() {
+    // Clone and replace container to remove old mouseleave listener
+    const newStarsContainer = starsContainer.cloneNode(false);
+    while (starsContainer.firstChild) {
+        newStarsContainer.appendChild(starsContainer.firstChild);
+    }
+    starsContainer.parentNode.replaceChild(newStarsContainer, starsContainer);
+    
+    // Add mouseleave listener to new container
+    newStarsContainer.addEventListener('mouseleave', function() {
         const selectedRating = modal.dataset.selectedRating;
         if (selectedRating) {
             highlightModalStars(parseInt(selectedRating));
+        } else if (hasUserVoted) {
+            // Show previous rating as default when hovering off
+            highlightModalStars(userCurrentRating);
         } else {
             clearModalStars();
         }
     });
     
-    // Reset selection
-    delete modal.dataset.selectedRating;
-    document.getElementById('btnModalSubmitRating').disabled = true;
+    // If user already voted, pre-select their previous rating
+    if (hasUserVoted) {
+        modal.dataset.selectedRating = userCurrentRating;
+        selectModalRating(userCurrentRating);
+        document.getElementById('btnModalSubmitRating').disabled = false;
+    } else {
+        // Reset selection
+        delete modal.dataset.selectedRating;
+        document.getElementById('btnModalSubmitRating').disabled = true;
+    }
     
     // Show modal
     modal.style.display = 'flex';
@@ -400,6 +441,18 @@ function closeRatingModal() {
         delete modal.dataset.selectedRating;
         delete modal.dataset.professorId;
         clearModalStars();
+        
+        // Remove loading overlay if present
+        const overlay = modal.querySelector('.loading-overlay');
+        if (overlay) overlay.remove();
+        
+        // Reset submit button state
+        const submitButton = document.getElementById('btnModalSubmitRating');
+        if (submitButton) {
+            submitButton.disabled = true;
+            submitButton.classList.remove('btn-loading');
+            submitButton.textContent = 'Confirmar';
+        }
     }
 }
 
@@ -460,7 +513,7 @@ async function submitModalRating() {
     }
     
     // Don't close modal yet - show loading state
-    const modalContent = modal.querySelector('.modal-content');
+    const modalContent = modal.querySelector('.rating-modal-content');
     const submitButton = document.getElementById('btnModalSubmitRating');
     
     // Add loading overlay to modal
@@ -576,8 +629,20 @@ async function submitRating(rating, professorId = null) {
         const result = await response.json();
         console.log('Rating salvo:', result);
         
-        // ✅ Simplified: Just reload the page after successful rating
-        window.location.reload();
+        // ✅ Check if it's an update BEFORE modifying AVALIACOES_DATA
+        const isUpdate = getUserCurrentRating(professorId) !== null;
+        
+        // ✅ Update UI directly without reloading the page
+        closeRatingModal();
+        
+        // Update AVALIACOES_DATA to reflect the new rating
+        updateAvaliacoesData(professorId, rating, result.avaliacaoId);
+        
+        // Update the visual elements with new average
+        updateRatingDisplay(professorId, result.novaMedia, result.totalAvaliacoes, rating);
+        
+        // Show success toast
+        showToast(isUpdate ? 'Avaliação atualizada!' : 'Avaliação enviada!', 'success');
         
     } catch (error) {
         console.error('Erro ao enviar rating:', error);
@@ -597,4 +662,171 @@ async function submitRating(rating, professorId = null) {
         showToast(parseErrorMessage(error.message) || 'Erro ao enviar avaliação', 'error');
         return null;
     }
+}
+
+/**
+ * Update AVALIACOES_DATA after submitting a rating
+ */
+function updateAvaliacoesData(professorId, nota, avaliacaoId) {
+    // Find existing rating from user
+    const existingIndex = AVALIACOES_DATA.findIndex(a => {
+        return a.isOwner && (String(a.professorId || '') === String(professorId || ''));
+    });
+    
+    if (existingIndex !== -1) {
+        // Update existing rating
+        AVALIACOES_DATA[existingIndex].nota = nota;
+        console.log('Avaliação atualizada em AVALIACOES_DATA:', AVALIACOES_DATA[existingIndex]);
+    } else {
+        // Add new rating
+        const newAvaliacao = {
+            id: avaliacaoId,
+            disciplinaId: CLASS_ID,
+            professorId: professorId || null,
+            nota: nota,
+            createdAt: new Date().toISOString(),
+            isOwner: true
+        };
+        AVALIACOES_DATA.push(newAvaliacao);
+        console.log('Nova avaliação adicionada a AVALIACOES_DATA:', newAvaliacao);
+    }
+}
+
+/**
+ * Update rating display elements (stars, score, count)
+ */
+function updateRatingDisplay(professorId, novaMedia, totalAvaliacoes, userRating) {
+    console.log('Atualizando display:', { professorId, novaMedia, totalAvaliacoes, userRating });
+    
+    if (professorId === null || professorId === '' || professorId === 'null') {
+        // Update discipline rating
+        updateDisciplineRatingDisplay(novaMedia, totalAvaliacoes, userRating);
+    } else {
+        // Update professor rating
+        updateProfessorRatingDisplay(professorId, novaMedia, totalAvaliacoes, userRating);
+    }
+    
+    // Re-setup interactive stars to reflect new state
+    setupInteractiveStars();
+}
+
+/**
+ * Update discipline rating display
+ */
+function updateDisciplineRatingDisplay(novaMedia, totalAvaliacoes, userRating) {
+    // Desktop elements
+    const desktopScore = document.querySelector('.discipline-rating .rating-score');
+    const desktopCount = document.querySelector('.discipline-rating .rating-count');
+    const desktopStars = document.querySelector('.discipline-rating-stars');
+    
+    if (desktopScore) {
+        desktopScore.textContent = novaMedia > 0 ? novaMedia.toFixed(1) : 'N/A';
+    }
+    if (desktopCount) {
+        desktopCount.textContent = `${totalAvaliacoes} ${totalAvaliacoes === 1 ? 'avaliação' : 'avaliações'}`;
+    }
+    if (desktopStars) {
+        updateStarsVisual(desktopStars, novaMedia, true);
+    }
+    
+    // Mobile elements
+    const mobileScore = document.querySelector('.mobile-card-rating .mobile-rating-score');
+    const mobileCount = document.querySelector('.mobile-card-rating .mobile-rating-count');
+    const mobileStars = document.querySelector('.discipline-rating-stars-mobile');
+    
+    if (mobileScore) {
+        mobileScore.textContent = novaMedia > 0 ? novaMedia.toFixed(1) : 'N/A';
+    }
+    if (mobileCount) {
+        mobileCount.textContent = `${totalAvaliacoes} ${totalAvaliacoes === 1 ? 'avaliação' : 'avaliações'}`;
+    }
+    if (mobileStars) {
+        updateStarsVisual(mobileStars, novaMedia, true);
+    }
+}
+
+/**
+ * Update professor rating display
+ */
+function updateProfessorRatingDisplay(professorId, novaMedia, totalAvaliacoes, userRating) {
+    // Find professor index
+    const profIndex = PROFESSORES_DATA.findIndex(p => {
+        const profId = p.id || p.professorId || p.ID;
+        return String(profId) === String(professorId);
+    });
+    
+    if (profIndex === -1) {
+        console.warn('Professor não encontrado:', professorId);
+        return;
+    }
+    
+    // Desktop professor list
+    const professorItems = document.querySelectorAll('.professor-item');
+    if (professorItems[profIndex]) {
+        const item = professorItems[profIndex];
+        const scoreElement = item.querySelector('.rating-value');
+        const starsContainer = item.querySelector('.rating-stars');
+        
+        if (scoreElement) {
+            scoreElement.textContent = novaMedia > 0 ? novaMedia.toFixed(1) : 'N/A';
+        }
+        if (starsContainer) {
+            updateStarsVisual(starsContainer, novaMedia, true);
+        }
+    }
+    
+    // Mobile sidebar
+    const sidebarItem = document.querySelector(`.sidebar-professor-item[data-professor-id="${professorId}"]`);
+    if (sidebarItem) {
+        const scoreElement = sidebarItem.querySelector('.rating-value');
+        const starsContainer = sidebarItem.querySelector('.rating-stars');
+        
+        if (scoreElement) {
+            scoreElement.textContent = novaMedia > 0 ? novaMedia.toFixed(1) : 'N/A';
+        }
+        if (starsContainer) {
+            updateStarsVisual(starsContainer, novaMedia, true);
+        }
+    }
+    
+    // If this professor is currently selected, update main display too
+    if (typeof professorSelecionado !== 'undefined' && String(professorSelecionado) === String(professorId)) {
+        // Update main professor header if visible
+        const mainProfessorScore = document.querySelector('.professor-rating .rating-score');
+        const mainProfessorStars = document.querySelector('.professor-rating .rating-stars');
+        const mainProfessorCount = document.querySelector('.professor-rating .rating-count');
+        
+        if (mainProfessorScore) {
+            mainProfessorScore.textContent = novaMedia > 0 ? novaMedia.toFixed(1) : 'N/A';
+        }
+        if (mainProfessorStars) {
+            updateStarsVisual(mainProfessorStars, novaMedia, true);
+        }
+        if (mainProfessorCount) {
+            mainProfessorCount.textContent = `${totalAvaliacoes} ${totalAvaliacoes === 1 ? 'avaliação' : 'avaliações'}`;
+        }
+    }
+}
+
+/**
+ * Update stars visual based on average rating
+ */
+function updateStarsVisual(starsContainer, avgRating, hasUserVoted = false) {
+    const stars = starsContainer.querySelectorAll('.star');
+    stars.forEach((star, index) => {
+        star.classList.remove('filled', 'half', 'hover', 'user-voted', 'half-user-voted');
+        
+        if (avgRating >= index + 1) {
+            star.classList.add('filled');
+            if (hasUserVoted) {
+                star.classList.add('user-voted');
+            }
+        } else if (avgRating >= index + 0.5) {
+            if (hasUserVoted) {
+                star.classList.add('half-user-voted');
+            } else {
+                star.classList.add('half');
+            }
+        }
+    });
 }

@@ -3,15 +3,15 @@
 .user-container {
     max-width: 900px;
     margin: 0 auto;
-    padding: 20px;
+    padding: 16px;
 }
 
 .user-header {
-    margin-bottom: 30px;
+    margin-bottom: 24px;
 }
 
 .user-header h1 {
-    font-size: 28px;
+    font-size: 24px;
     font-weight: 600;
     color: var(--text-primary);
     margin-bottom: 8px;
@@ -19,12 +19,12 @@
 
 .user-header p {
     color: var(--text-secondary);
-    font-size: 16px;
+    font-size: 14px;
 }
 
 .user-content {
     display: grid;
-    gap: 24px;
+    gap: 20px;
 }
 
 /* User Info Section */
@@ -32,22 +32,24 @@
     background: var(--bg-white);
     border-radius: 8px;
     border: 1px solid var(--border-color);
-    padding: 24px;
+    padding: 20px;
 }
 
 .section-title h2 {
-    font-size: 18px;
+    font-size: 16px;
     font-weight: 600;
     color: var(--text-primary);
-    margin-bottom: 20px;
+    margin-bottom: 16px;
     padding-bottom: 12px;
     border-bottom: 1px solid var(--border-color);
 }
 
 .user-info-card {
     display: flex;
-    gap: 24px;
-    align-items: flex-start;
+    flex-direction: column;
+    gap: 20px;
+    align-items: center;
+    text-align: center;
 }
 
 .user-avatar {
@@ -58,27 +60,28 @@
 }
 
 .avatar-circle {
-    width: 80px;
-    height: 80px;
+    width: 70px;
+    height: 70px;
     border-radius: 50%;
     background: var(--primary);
     display: flex;
     align-items: center;
     justify-content: center;
     color: white;
-    font-size: 24px;
+    font-size: 22px;
     font-weight: 600;
 }
 
 .change-avatar-btn {
-    padding: 6px 12px;
+    padding: 8px 16px;
     border: 1px solid var(--border-color);
     background: var(--bg-white);
     border-radius: 4px;
     cursor: pointer;
-    font-size: 12px;
+    font-size: 13px;
     color: var(--text-secondary);
     transition: all 0.2s ease;
+    min-height: 36px;
 }
 
 .change-avatar-btn:hover {
@@ -87,13 +90,16 @@
 }
 
 .user-details {
-    flex: 1;
+    width: 100%;
 }
 
 .detail-row {
     display: flex;
-    padding: 8px 0;
+    flex-direction: column;
+    gap: 4px;
+    padding: 10px 0;
     border-bottom: 1px solid var(--bg-light);
+    text-align: left;
 }
 
 .detail-row:last-child {
@@ -101,16 +107,16 @@
 }
 
 .detail-row label {
-    width: 120px;
     font-weight: 500;
     color: var(--text-primary);
     margin: 0;
-    font-size: 14px;
+    font-size: 13px;
 }
 
 .detail-row span {
     color: var(--text-secondary);
     font-size: 14px;
+    word-break: break-all;
 }
 
 /* Actions Section */
@@ -118,19 +124,19 @@
     background: var(--bg-white);
     border-radius: 8px;
     border: 1px solid var(--border-color);
-    padding: 24px;
+    padding: 20px;
 }
 
 .actions-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    grid-template-columns: 1fr;
     gap: 16px;
 }
 
 .action-card {
     border: 1px solid var(--border-color);
     border-radius: 6px;
-    padding: 20px;
+    padding: 16px;
     transition: all 0.2s ease;
 }
 
@@ -153,7 +159,7 @@
 }
 
 .action-content h3 {
-    font-size: 16px;
+    font-size: 15px;
     font-weight: 600;
     color: var(--text-primary);
     margin-bottom: 6px;
@@ -163,12 +169,13 @@
     color: var(--text-secondary);
     margin-bottom: 16px;
     line-height: 1.4;
-    font-size: 14px;
+    font-size: 13px;
 }
 
 .action-content .btn-secondary,
 .action-content .btn-danger {
     width: 100%;
+    min-height: 44px;
 }
 
 /* Rating Input */
@@ -184,10 +191,11 @@
 }
 
 .rating-input label {
-    font-size: 20px;
+    font-size: 24px;
     color: var(--border-color);
     cursor: pointer;
     transition: color 0.2s ease;
+    padding: 4px;
 }
 
 .rating-input input[type="radio"]:checked ~ label,
@@ -210,14 +218,14 @@
 .tag {
     background: var(--border-color);
     color: var(--text-primary);
-    padding: 4px 8px;
+    padding: 6px 12px;
     border-radius: 12px;
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 500;
 }
 
 .tag.removable {
-    padding-right: 20px;
+    padding-right: 24px;
     position: relative;
     cursor: pointer;
 }
@@ -225,59 +233,149 @@
 .tag.removable::after {
     content: '×';
     position: absolute;
-    right: 6px;
+    right: 8px;
     top: 50%;
     transform: translateY(-50%);
     font-weight: bold;
 }
 
-/* Responsive design */
-@media (max-width: 768px) {
+/* ============================================
+   RESPONSIVE DESIGN - Mobile First
+   ============================================ */
+
+/* Tablet and up (768px and up) */
+@media (min-width: 768px) {
     .user-container {
-        padding: 16px;
+        padding: 24px;
     }
     
     .user-header h1 {
-        font-size: 24px;
+        font-size: 28px;
+    }
+    
+    .user-header p {
+        font-size: 16px;
+    }
+    
+    .user-info-section,
+    .actions-section {
+        padding: 24px;
+    }
+    
+    .section-title h2 {
+        font-size: 18px;
+        margin-bottom: 20px;
     }
     
     .user-info-card {
-        flex-direction: column;
-        text-align: center;
-    }
-    
-    .user-details {
-        width: 100%;
-    }
-    
-    .detail-row {
-        flex-direction: column;
-        gap: 4px;
+        flex-direction: row;
+        gap: 24px;
+        align-items: flex-start;
         text-align: left;
     }
     
+    .avatar-circle {
+        width: 80px;
+        height: 80px;
+        font-size: 24px;
+    }
+    
+    .user-details {
+        flex: 1;
+    }
+    
+    .detail-row {
+        flex-direction: row;
+        gap: 0;
+    }
+    
     .detail-row label {
-        width: auto;
+        width: 120px;
+        flex-shrink: 0;
+    }
+    
+    .detail-row span {
+        word-break: normal;
     }
     
     .actions-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .avatar-circle {
-        width: 70px;
-        height: 70px;
-        font-size: 20px;
-    }
-}
-
-@media (max-width: 480px) {
-    .user-info-section,
-    .actions-section {
-        padding: 16px;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     }
     
     .action-card {
-        padding: 16px;
+        padding: 20px;
+    }
+    
+    .action-content h3 {
+        font-size: 16px;
+    }
+    
+    .action-content p {
+        font-size: 14px;
+    }
+}
+
+/* Large screens (1024px and up) */
+@media (min-width: 1024px) {
+    .user-container {
+        padding: 30px 40px;
+    }
+    
+    .user-content {
+        gap: 24px;
+    }
+}
+
+/* Small mobile (up to 480px) */
+@media (max-width: 480px) {
+    .user-container {
+        padding: 12px;
+    }
+    
+    .user-header {
+        margin-bottom: 16px;
+    }
+    
+    .user-header h1 {
+        font-size: 20px;
+    }
+    
+    .user-header p {
+        font-size: 13px;
+    }
+    
+    .user-info-section,
+    .actions-section {
+        padding: 14px;
+    }
+    
+    .section-title h2 {
+        font-size: 15px;
+    }
+    
+    .avatar-circle {
+        width: 60px;
+        height: 60px;
+        font-size: 20px;
+    }
+    
+    .detail-row label {
+        font-size: 12px;
+    }
+    
+    .detail-row span {
+        font-size: 13px;
+    }
+    
+    .action-card {
+        padding: 14px;
+    }
+    
+    .action-content h3 {
+        font-size: 14px;
+    }
+    
+    .action-content p {
+        font-size: 12px;
     }
 }

@@ -38,8 +38,10 @@ public class PdfValidationService {
 	// Regex do código de autenticação no formato 123456-12345678901234
 	private static final Pattern CODE_PATTERN = Pattern.compile("([0-9]{6}-[0-9]{14})");
 
-	/** Resultado da validação de PDF. */
-	public record ValidationResult(boolean valid, String message, String nome, String matricula, String curso) {}
+	/** Resultado da validação de PDF. 
+	 * Nota: nome e curso são extraídos apenas para validar o PDF, mas não são armazenados.
+	 */
+	public record ValidationResult(boolean valid, String message, String matricula) {}
 
 	/**
 	 * Valida o arquivo PDF e tenta extrair os dados do aluno.
@@ -49,14 +51,14 @@ public class PdfValidationService {
 	public static ValidationResult validate(MultipartFile file) {
 		String filename = file.getOriginalFilename();
 		if (filename == null || !filename.toLowerCase().endsWith(".pdf")) {
-			return new ValidationResult(false, "O arquivo enviado não é um PDF.", null, null, null);
+			return new ValidationResult(false, "O arquivo enviado não é um PDF.", null);
 		}
 		try (var is = file.getInputStream(); var doc = PDDocument.load(is)) {
 			if (doc.getNumberOfPages() <= 0) {
-				return new ValidationResult(false, "PDF inválido: nenhuma página encontrada.", null, null, null);
+				return new ValidationResult(false, "PDF inválido: nenhuma página encontrada.", null);
 			}
 			if (doc.isEncrypted()) {
-				return new ValidationResult(false, "PDF está criptografado. Por favor, envie um PDF não criptografado.", null, null, null);
+				return new ValidationResult(false, "PDF está criptografado. Por favor, envie um PDF não criptografado.", null);
 			}
 
 			// Extrai o texto e valida a presença da URL de autenticidade + código
@@ -64,21 +66,22 @@ public class PdfValidationService {
 			text = text.replaceAll("\\R+", " ").replaceAll("\\s+", " ");
 			String code = getVerificationCode(text);
 			if (code == null || !containsAuthenticateUrl(text)) {
-				return new ValidationResult(false, "String de verificação não encontrada no PDF.", null, null, null);
+				return new ValidationResult(false, "String de verificação não encontrada no PDF.", null);
 			}
 
 			// Download authenticity copy and compare
 			byte[] originalBytes = file.getBytes();
 			byte[] downloaded = downloadPdf(code);
 			if (downloaded == null || downloaded.length == 0) {
-				return new ValidationResult(false, "Não foi possível baixar o PDF de autenticidade para o código " + code + ".", null, null, null);
+				return new ValidationResult(false, "Não foi possível baixar o PDF de autenticidade para o código " + code + ".", null);
 			}
 
 			boolean equal = Arrays.equals(sha256(originalBytes), sha256(downloaded));
 			if (!equal) {
-				return new ValidationResult(false, "O conteúdo do PDF difere da cópia de autenticidade (código: " + code + ").", null, null, null);
+				return new ValidationResult(false, "O conteúdo do PDF difere da cópia de autenticidade (código: " + code + ").", null);
 			}
-			// Extrai os detalhes do usuário do texto original do PDF
+			// Extrai os detalhes do usuário do texto original do PDF para validação
+			// Nota: nome e curso não são armazenados, apenas usados para validar o formato do PDF
 			String nome = null, matricula = null, curso = null;
 			Matcher nomeMatcherPTBR = Pattern.compile("arquivos, que\\s+([^,]+?)\\s*,").matcher(text);
 			if (nomeMatcherPTBR.find()) {
@@ -86,7 +89,7 @@ public class PdfValidationService {
 			}
 			final String INVALID_FILE = "Por favor, insira o arquivo PDF do atestado de matrícula em português";
 			if(nome == null){
-				return new ValidationResult(false, "Não foi possível extrair o nome do texto do PDF." + INVALID_FILE, null, null, null);
+				return new ValidationResult(false, "Não foi possível extrair o nome do texto do PDF." + INVALID_FILE, null);
 			}
 
 			Matcher matriculaMatcherPTBR = Pattern
@@ -96,7 +99,7 @@ public class PdfValidationService {
 				matricula = matriculaMatcherPTBR.group(1).trim();
 			} 
 			if(matricula == null){
-				return new ValidationResult(false, "Não foi possível extrair a matrícula do texto do PDF." + INVALID_FILE, null, null, null);
+				return new ValidationResult(false, "Não foi possível extrair a matrícula do texto do PDF." + INVALID_FILE, null);
 			}
 
 			Matcher cursoMatcherPTBR = Pattern.compile("no curso de\\s+([^,]+?)\\s*,").matcher(text);
@@ -104,14 +107,15 @@ public class PdfValidationService {
 				curso = cursoMatcherPTBR.group(1).trim();
 			}
 			if(curso == null){
-				return new ValidationResult(false, "Não foi possível extrair o curso do texto do PDF." + INVALID_FILE, null, null, null);
+				return new ValidationResult(false, "Não foi possível extrair o curso do texto do PDF." + INVALID_FILE, null);
 			}
 			
-			return new ValidationResult(true, "Arquivo PDF válido. URL: " + UFSC_AUTHENTICATE_URL + ", code: " + code, nome, matricula, curso);
+			// Retorna apenas a matrícula - nome e curso foram validados mas não serão armazenados
+			return new ValidationResult(true, "Arquivo PDF válido. URL: " + UFSC_AUTHENTICATE_URL + ", code: " + code, matricula);
 		} catch (IOException e) {
-			return new ValidationResult(false, "Falha ao ler o PDF: " + e.getMessage(), null, null, null);
+			return new ValidationResult(false, "Falha ao ler o PDF: " + e.getMessage(), null);
 		} catch (Exception e) {
-			return new ValidationResult(false, "Falha ao baixar o PDF de autenticidade: " + e.getMessage(), null, null, null);
+			return new ValidationResult(false, "Falha ao baixar o PDF de autenticidade: " + e.getMessage(), null);
 		}
 	}
 

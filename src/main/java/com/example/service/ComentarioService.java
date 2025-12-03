@@ -12,6 +12,9 @@ import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -42,7 +45,9 @@ public class ComentarioService {
     // ✅ Criar comentário principal (com disciplina e professor)
     public Comentario criarComentario(Usuario usuario, String texto, Disciplina disciplina, Professor professor) {
         Comentario comentario = ComentarioFactory.criarComentario(usuario, texto, disciplina, professor, null);
-		return comentarioRepository.save(comentario);
+        // Verificar se o comentário é incomum e marcar como alarmante se necessário
+        comentario.atualizarStatusAlarmante();
+        return comentarioRepository.save(comentario);
     }
 
 
@@ -111,6 +116,84 @@ public class ComentarioService {
 		  comentario.addUserVote(userEmail, isUpVote);
 		  
 		  comentarioRepository.save(comentario);
+	 }
+
+	 // ==================== Métodos para Admin ====================
+
+	 /**
+	  * Buscar todos os comentários principais ordenados pelos mais recentes
+	  */
+	 @Transactional(readOnly = true)
+	 public Page<Comentario> buscarTodosComentariosOrdenados(int page, int size) {
+		  Pageable pageable = PageRequest.of(page, size);
+		  return comentarioRepository.findAllOrderByCreatedAtDesc(pageable);
+	 }
+
+	 /**
+	  * Buscar comentários alarmantes (para revisão)
+	  */
+	 @Transactional(readOnly = true)
+	 public Page<Comentario> buscarComentariosAlarmantes(int page, int size) {
+		  Pageable pageable = PageRequest.of(page, size);
+		  return comentarioRepository.findAlarmantes(pageable);
+	 }
+
+	 /**
+	  * Contar comentários alarmantes
+	  */
+	 @Transactional(readOnly = true)
+	 public long contarAlarmantes() {
+		  return comentarioRepository.countAlarmantes();
+	 }
+
+	 /**
+	  * Contar total de comentários
+	  */
+	 @Transactional(readOnly = true)
+	 public long contarTodosComentarios() {
+		  return comentarioRepository.countComentariosPrincipais();
+	 }
+
+	 /**
+	  * Marcar comentário como seguro (remove da lista de alarmantes)
+	  */
+	 @Transactional
+	 public Comentario marcarComoSeguro(Long comentarioId) {
+		  Comentario comentario = comentarioRepository.findById(comentarioId)
+					 .orElseThrow(() -> new IllegalArgumentException("Comentário não encontrado"));
+		  
+		  comentario.marcarComoSeguro();
+		  return comentarioRepository.save(comentario);
+	 }
+
+	 /**
+	  * Denunciar um comentário
+	  * @param comentarioId ID do comentário
+	  * @param userEmail Email do usuário que está denunciando
+	  * @return true se a denúncia foi registrada, false se o usuário já denunciou
+	  */
+	 @Transactional
+	 public boolean denunciar(Long comentarioId, String userEmail) {
+		  Comentario comentario = comentarioRepository.findById(comentarioId)
+					 .orElseThrow(() -> new IllegalArgumentException("Comentário não encontrado"));
+		  
+		  boolean denunciaAdicionada = comentario.adicionarDenuncia(userEmail);
+		  
+		  if (denunciaAdicionada) {
+				comentarioRepository.save(comentario);
+		  }
+		  
+		  return denunciaAdicionada;
+	 }
+
+	 /**
+	  * Obter usuário do comentário (para banimento)
+	  */
+	 @Transactional(readOnly = true)
+	 public Usuario getUsuarioDoComentario(Long comentarioId) {
+		  Comentario comentario = comentarioRepository.findById(comentarioId)
+					 .orElseThrow(() -> new IllegalArgumentException("Comentário não encontrado"));
+		  return comentario.getUsuario();
 	 }
 	 
 	 

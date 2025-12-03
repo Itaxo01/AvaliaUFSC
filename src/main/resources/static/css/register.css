@@ -6,12 +6,12 @@
     align-items: center;
     justify-content: center;
     background: linear-gradient(135deg, #f5f7fa 0%, #e4e8ec 100%);
-    padding: 20px;
+    padding: 16px;
 }
 
 .register-card {
     background: var(--bg-white);
-    padding: 40px;
+    padding: 32px 24px;
     border-radius: 12px;
     border: 1px solid var(--border-color);
     width: 100%;
@@ -21,11 +21,11 @@
 
 .register-header {
     text-align: center;
-    margin-bottom: 30px;
+    margin-bottom: 28px;
 }
 
 .register-header h1 {
-    font-size: 28px;
+    font-size: 26px;
     font-weight: 700;
     color: var(--primary);
     margin-bottom: 8px;
@@ -46,11 +46,20 @@
     margin-bottom: 0;
 }
 
+.register-form input[type="email"],
+.register-form input[type="password"],
+.register-form input[type="text"] {
+    font-size: 16px; /* Prevents zoom on iOS */
+    padding: 12px 14px;
+    min-height: 44px;
+}
+
 .register-form .file-upload-text {
     justify-content: center;
     text-align: center;
     padding: 16px;
     font-size: 14px;
+    min-height: 60px;
 }
 
 .register-form .file-upload input[type="file"] {
@@ -63,6 +72,8 @@
 
 .register-form .btn-primary {
     margin-top: 8px;
+    min-height: 48px;
+    font-size: 15px;
 }
 
 .form-footer {
@@ -88,17 +99,163 @@
     text-decoration: underline;
 }
 
-/* Responsive design */
-@media (max-width: 480px) {
+/* ============================================
+   INFO ICON & TOOLTIP
+   ============================================ */
+
+.info-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    margin-left: 6px;
+    color: var(--text-muted);
+    cursor: help;
+    position: relative;
+    vertical-align: middle;
+    transition: color 0.2s;
+}
+
+.info-icon:hover,
+.info-icon:focus {
+    color: var(--primary);
+    outline: none;
+}
+
+.info-icon svg {
+    width: 16px;
+    height: 16px;
+}
+
+.info-tooltip {
+    display: none;
+    position: absolute;
+    bottom: calc(100% + 10px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--bg-white);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 14px 16px;
+    width: 280px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    text-align: left;
+    z-index: 100;
+}
+
+.info-tooltip::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 8px solid transparent;
+    border-top-color: var(--bg-white);
+}
+
+.info-tooltip::before {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 9px solid transparent;
+    border-top-color: var(--border-color);
+}
+
+.info-tooltip strong {
+    display: block;
+    color: var(--text-primary);
+    font-size: 14px;
+    margin-bottom: 4px;
+}
+
+.info-tooltip em {
+    display: block;
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.info-icon:hover .info-tooltip,
+.info-icon:focus .info-tooltip {
+    display: block;
+}
+
+/* ============================================
+   RESPONSIVE DESIGN - Mobile First
+   ============================================ */
+
+/* Tablet and up (768px and up) */
+@media (min-width: 768px) {
     .register-container {
-        padding: 16px;
+        padding: 24px;
     }
     
     .register-card {
-        padding: 30px 24px;
+        padding: 40px;
     }
     
     .register-header h1 {
-        font-size: 24px;
+        font-size: 28px;
+    }
+}
+
+/* Small mobile (up to 480px) */
+@media (max-width: 480px) {
+    .register-container {
+        padding: 12px;
+    }
+    
+    .register-card {
+        padding: 24px 20px;
+        border-radius: 10px;
+    }
+    
+    .register-header {
+        margin-bottom: 24px;
+    }
+    
+    .register-header h1 {
+        font-size: 22px;
+    }
+    
+    .register-header p {
+        font-size: 13px;
+    }
+    
+    .register-form .file-upload-text {
+        padding: 14px;
+        font-size: 13px;
+    }
+    
+    .form-footer {
+        margin-top: 20px;
+        padding-top: 20px;
+    }
+    
+    .form-footer p {
+        font-size: 13px;
+    }
+    
+    /* Tooltip mobile adjustments */
+    .info-tooltip {
+        width: 240px;
+        left: auto;
+        right: -10px;
+        transform: none;
+        font-size: 12px;
+        padding: 12px 14px;
+    }
+    
+    .info-tooltip::after,
+    .info-tooltip::before {
+        left: auto;
+        right: 20px;
+        transform: none;
     }
 }

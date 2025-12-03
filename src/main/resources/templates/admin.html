@@ -24,11 +24,19 @@
             </div>
 
             <div class="nav-links">
+                <!-- Search Toggle Button (Mobile) -->
+                <button class="search-toggle" id="searchToggle" aria-label="Buscar">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <path d="m21 21-4.35-4.35"></path>
+                    </svg>
+                </button>
+
                 <a href="/admin" class="nav-link active">Administração</a>
                 
                 <!-- User Menu -->
                 <div class="user-menu">
-                    <a href="/user" class="user-avatar" th:title="${userName != null ? userName : 'Perfil'}">
+                    <a href="javascript:void(0)" class="user-avatar" id="userAvatar" title="Minha Conta">
                         <span th:text="${userInitial != null ? userInitial : 'U'}">U</span>
                     </a>
                     <button class="btn-logout" onclick="logout()" title="Sair">
@@ -38,6 +46,24 @@
                             <line x1="21" y1="12" x2="9" y2="12"></line>
                         </svg>
                     </button>
+                    <!-- Mobile Dropdown -->
+                    <div class="user-dropdown" id="userDropdown">
+                        <a href="/user">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="12" cy="7" r="4"></circle>
+                            </svg>
+                            Minha Conta
+                        </a>
+                        <button class="logout-item" onclick="logout()">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                                <polyline points="16 17 21 12 16 7"></polyline>
+                                <line x1="21" y1="12" x2="9" y2="12"></line>
+                            </svg>
+                            Sair
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -50,77 +76,211 @@
     function logout() {
         document.getElementById('logout-form').submit();
     }
+    
+    // Search toggle for mobile
+    const searchToggle = document.getElementById('searchToggle');
+    const navSearch = document.querySelector('.nav-search');
+    if (searchToggle && navSearch) {
+        searchToggle.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const isActive = navSearch.classList.toggle('active');
+            searchToggle.classList.toggle('active', isActive);
+            if (isActive) {
+                document.getElementById('searchInput').focus();
+            }
+        });
+        
+        // Close search when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!navSearch.contains(e.target) && !searchToggle.contains(e.target)) {
+                navSearch.classList.remove('active');
+                searchToggle.classList.remove('active');
+            }
+        });
+    }
+    
+    // User avatar dropdown for mobile
+    const userAvatar = document.getElementById('userAvatar');
+    const userDropdown = document.getElementById('userDropdown');
+    if (userAvatar && userDropdown) {
+        userAvatar.addEventListener('click', (e) => {
+            // On desktop, redirect to user page
+            if (window.innerWidth > 768) {
+                window.location.href = '/user';
+                return;
+            }
+            // On mobile, toggle dropdown
+            e.preventDefault();
+            userDropdown.classList.toggle('active');
+        });
+        
+        // Close dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!userAvatar.contains(e.target) && !userDropdown.contains(e.target)) {
+                userDropdown.classList.remove('active');
+            }
+        });
+    }
     </script>
 
     <div class="admin-container">
         <div class="admin-header">
             <h1>Painel Administrativo</h1>
-            <p>Gerencie usuários e permissões do sistema</p>
+            <p>Gerencie usuários, comentários e permissões do sistema</p>
         </div>
 
-        <div class="users-section">
-            <div class="section-header">
-                <h2>Usuários Cadastrados</h2>
-            </div>
-
+        <!-- Sistema de Abas -->
+        <div class="admin-tabs">
+            <button class="tab-btn active" data-tab="users" onclick="switchTab('users')">
+                <span class="tab-icon">👥</span>
+                <span class="tab-text">Usuários</span>
+                <span class="tab-badge" id="users-badge" style="display: none;"></span>
+            </button>
+            <button class="tab-btn" data-tab="banned" onclick="switchTab('banned')">
+                <span class="tab-icon">🚫</span>
+                <span class="tab-text">Banidos</span>
+                <span class="tab-badge" id="banned-badge" style="display: none;"></span>
+            </button>
+            <button class="tab-btn" data-tab="alarming" onclick="switchTab('alarming')">
+                <span class="tab-icon">⚠️</span>
+                <span class="tab-text">Revisão</span>
+                <span class="tab-badge warning" id="alarming-badge" style="display: none;"></span>
+            </button>
+            <button class="tab-btn" data-tab="comments" onclick="switchTab('comments')">
+                <span class="tab-icon">💬</span>
+                <span class="tab-text">Comentários</span>
+                <span class="tab-badge" id="comments-badge" style="display: none;"></span>
+            </button>
+            <button class="tab-btn" data-tab="scrapper" onclick="switchTab('scrapper')">
+                <span class="tab-icon">🔄</span>
+                <span class="tab-text">Scrapper</span>
+            </button>
         </div>
 
-        <div class="scrapper-section">
-            <div class="section-header">
-                <h2>Scrapper de Disciplinas</h2>
-                <p>Importe disciplinas e professores do sistema CAGR/UFSC</p>
-            </div>
+        <!-- Conteúdo das Abas -->
+        <div class="tab-content">
             
-            <div class="scrapper-controls">
-                <button id="execute-scrapper-btn" class="btn btn-primary" onclick="showCredentialsModal()">
-                    Executar Scrapping
-                </button>
-                <button id="refresh-status-btn" class="btn btn-secondary" onclick="refreshScrapperStatus()">
-                    Atualizar Status
-                </button>
-            </div>
-            
-            <div class="scrapper-status" id="scrapper-status">
-                <div class="status-loading">Carregando status...</div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Modal para credenciais CAGR -->
-    <div id="credentials-modal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>Credenciais CAGR/UFSC</h3>
-                <span class="close" onclick="hideCredentialsModal()">&times;</span>
-            </div>
-            <div class="modal-body">
-                <p>Insira suas credenciais do sistema CAGR para executar o scrapping:</p>
-                <form id="credentials-form">
-                    <div class="form-group">
-                        <label for="cagr-username">Usuário CAGR:</label>
-                        <input type="text" id="cagr-username" name="cagrUsername" required 
-                               placeholder="Seu usuário do CAGR"> <!-- mudar -->
+            <!-- Aba: Usuários Cadastrados -->
+            <div class="tab-pane active" id="tab-users">
+                <div class="section-header">
+                    <div class="section-title">
+                        <h2>Usuários Cadastrados</h2>
+                        <p>Gerencie os usuários do sistema</p>
                     </div>
-                    <div class="form-group">
-                        <label for="cagr-password">Senha CAGR:</label>
-                        <input type="password" id="cagr-password" name="cagrPassword" required 
-                               placeholder="Sua senha do CAGR">
+                    <button class="btn btn-secondary" onclick="loadUsersData(true)">🔄 Atualizar</button>
+                </div>
+                <div class="tab-body" id="users-content">
+                    <div class="tab-placeholder">
+                        <div class="placeholder-icon">👥</div>
+                        <p>Clique para carregar os usuários</p>
+                        <button class="btn btn-primary" onclick="loadUsersData()">Carregar Usuários</button>
                     </div>
-                    <div class="form-actions">
-                        <button type="button" class="btn btn-secondary" onclick="hideCredentialsModal()">
-                            Cancelar
+                </div>
+            </div>
+
+            <!-- Aba: Usuários Banidos -->
+            <div class="tab-pane" id="tab-banned">
+                <div class="section-header">
+                    <div class="section-title">
+                        <h2>Usuários Banidos</h2>
+                        <p>Matrículas bloqueadas de criar novas contas</p>
+                    </div>
+                    <button class="btn btn-secondary" onclick="loadBannedData(true)">🔄 Atualizar</button>
+                </div>
+                <div class="tab-body" id="banned-content">
+                    <div class="tab-placeholder">
+                        <div class="placeholder-icon">🚫</div>
+                        <p>Clique para carregar os usuários banidos</p>
+                        <button class="btn btn-primary" onclick="loadBannedData()">Carregar Banidos</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Aba: Comentários para Revisão -->
+            <div class="tab-pane" id="tab-alarming">
+                <div class="section-header">
+                    <div class="section-title">
+                        <h2>Comentários para Revisão</h2>
+                        <p>Comentários longos (+150 chars), com arquivos ou denunciados</p>
+                    </div>
+                    <div class="section-controls">
+                        <span class="comments-count" id="alarming-count"></span>
+                        <button class="btn btn-secondary" onclick="loadAlarmingData(true)">🔄 Atualizar</button>
+                    </div>
+                </div>
+                <div class="tab-body" id="alarming-content">
+                    <div class="tab-placeholder">
+                        <div class="placeholder-icon">⚠️</div>
+                        <p>Clique para carregar comentários para revisão</p>
+                        <button class="btn btn-primary" onclick="loadAlarmingData()">Carregar Comentários</button>
+                    </div>
+                </div>
+                <div class="pagination-controls" id="alarming-pagination"></div>
+            </div>
+
+            <!-- Aba: Todos os Comentários -->
+            <div class="tab-pane" id="tab-comments">
+                <div class="section-header">
+                    <div class="section-title">
+                        <h2>Todos os Comentários</h2>
+                        <p>Lista completa ordenada pelos mais recentes</p>
+                    </div>
+                    <div class="section-controls">
+                        <span class="comments-count" id="all-comments-count"></span>
+                        <button class="btn btn-secondary" onclick="loadCommentsData(true)">🔄 Atualizar</button>
+                    </div>
+                </div>
+                <div class="tab-body" id="comments-content">
+                    <div class="tab-placeholder">
+                        <div class="placeholder-icon">💬</div>
+                        <p>Clique para carregar todos os comentários</p>
+                        <button class="btn btn-primary" onclick="loadCommentsData()">Carregar Comentários</button>
+                    </div>
+                </div>
+                <div class="pagination-controls" id="all-pagination"></div>
+            </div>
+
+            <!-- Aba: Scrapper -->
+            <div class="tab-pane" id="tab-scrapper">
+                <div class="section-header">
+                    <div class="section-title">
+                        <h2>Scrapper de Disciplinas</h2>
+                        <p>Importe disciplinas e professores do sistema CAGR/UFSC</p>
+                    </div>
+                </div>
+                <div class="tab-body" id="scrapper-content">
+                    <div class="scrapper-controls">
+                        <button id="execute-scrapper-btn" class="btn btn-primary" onclick="executeScrapper()">
+                            ▶️ Executar Scrapping
                         </button>
-                        <button type="submit" class="btn btn-primary">
-                            Executar Scrapping
+                        <button id="refresh-status-btn" class="btn btn-secondary" onclick="loadScrapperData(true)">
+                            🔄 Atualizar Status
                         </button>
                     </div>
-                </form>
+                    <div class="scrapper-status" id="scrapper-status">
+                        <div class="tab-placeholder">
+                            <div class="placeholder-icon">🔄</div>
+                            <p>Clique para carregar o status do scrapper</p>
+                            <button class="btn btn-primary" onclick="loadScrapperData()">Carregar Status</button>
+                        </div>
+                    </div>
+                </div>
             </div>
+
         </div>
     </div>
     
     <script src="/js/admin.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.6.2/dist/fuse.basic.min.js"></script>
 	 <script src="/js/searchBar.js?v=1.0.4"></script>
+
+    <!-- Footer -->
+    <footer class="site-footer">
+        <div class="footer-content">
+            <p class="footer-disclaimer">Este site não possui vínculo com a universidade e utiliza dados disponíveis no site da instituição. O código é open-source e está disponível em <a href="https://github.com/Itaxo01/AvaliaUFSC">github/avaliaUFSC</a></p>
+            
+            <p class="footer-contact">Notou algum erro? Entre em contato: <a href="mailto:kauan.fank@gmail.com">kauan.fank@gmail.com</a></p>
+        </div>
+    </footer>
 </body>
 </html>

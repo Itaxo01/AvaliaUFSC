@@ -2,9 +2,19 @@
    INDEX - AVALIAUFSC LANDING PAGE
    ================================= */
 
-/* Minimal navbar for index */
+/* Minimal navbar for index - always show nav-links */
 .navbar-minimal .nav-container {
-    padding: 15px 40px;
+    padding: 15px 16px;
+}
+
+.navbar-minimal .nav-links {
+    display: flex !important;
+}
+
+.navbar-minimal .user-menu {
+    border-left: 1px solid var(--border-color);
+    padding-left: 16px;
+    margin-left: 8px;
 }
 
 /* Container - full viewport height with centered content */
@@ -12,8 +22,8 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    min-height: calc(100vh - 180px);
-    padding: 20px;
+    min-height: calc(100vh - 120px);
+    padding: 20px 16px;
     background: linear-gradient(180deg, var(--bg-white) 0%, var(--bg-light) 100%);
 }
 
@@ -25,8 +35,7 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 28px;
-    margin-top: -80px;
+    gap: 24px;
     text-align: center;
 }
 
@@ -41,7 +50,7 @@
 }
 
 .index-logo h1 {
-    font-size: 48px;
+    font-size: 36px;
     font-weight: 700;
     color: var(--primary);
     margin: 0;
@@ -67,7 +76,7 @@
 
 .index-search .search-input {
     width: 100%;
-    padding: 18px 20px 18px 54px;
+    padding: 16px 18px 16px 50px;
     font-size: 16px;
     border: 2px solid var(--border-color);
     border-radius: 12px;
@@ -75,6 +84,7 @@
     transition: all 0.2s ease;
     background: var(--bg-white);
     color: var(--text-primary);
+    min-height: 54px;
 }
 
 .index-search .search-input:hover {
@@ -95,7 +105,7 @@
 /* Search Icon */
 .search-icon {
     position: absolute;
-    left: 18px;
+    left: 16px;
     top: 50%;
     transform: translateY(-40%);
     color: var(--text-muted);
@@ -104,8 +114,8 @@
 }
 
 .search-icon svg {
-    width: 22px;
-    height: 22px;
+    width: 20px;
+    height: 20px;
 }
 
 /* Search Results (dropdown) */
@@ -117,11 +127,12 @@
     background: var(--bg-white);
     border-radius: 12px;
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
-    max-height: 400px;
+    max-height: 60vh;
     overflow-y: auto;
     z-index: 1000;
     display: none;
     border: 1px solid var(--border-color);
+    -webkit-overflow-scrolling: touch;
 }
 
 .index-search .search-results.show {
@@ -130,14 +141,15 @@
 
 /* Search result items */
 .index-search .search-results .search-item {
-    padding: 14px 20px;
+    padding: 14px 16px;
     cursor: pointer;
     transition: background 0.15s ease;
     border-bottom: 1px solid var(--border-light);
     display: flex;
-    flex-direction: row;
-    align-items: center;
-    gap: 12px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+    min-height: 44px;
 }
 
 .index-search .search-results .search-item:last-child {
@@ -168,14 +180,11 @@
     font-weight: 600;
     color: var(--primary);
     font-size: 14px;
-    min-width: 90px;
-    flex-shrink: 0;
 }
 
 .index-search .search-results .search-item-name {
     color: var(--text-secondary);
-    font-size: 14px;
-    flex: 1;
+    font-size: 13px;
     text-align: left;
 }
 
@@ -183,10 +192,10 @@
     width: 100%;
     font-size: 0.72rem;
     color: var(--text-muted);
-    margin-top: -8px;
-    margin-left: 102px;
     font-style: italic;
     text-align: left;
+    margin-left: 0;
+    margin-top: 2px;
 }
 
 .index-search .search-results .no-results,
@@ -204,58 +213,132 @@
 
 .index-subtitle p {
     margin: 0;
-    font-size: 15px;
+    font-size: 14px;
     color: var(--text-secondary);
     font-weight: 400;
+    padding: 0 10px;
 }
 
-/* Responsividade */
+/* ============================================
+   RESPONSIVE DESIGN - Mobile First
+   ============================================ */
+
+/* Mobile adjustments for navbar-minimal */
 @media (max-width: 768px) {
+    .navbar-minimal .user-menu {
+        border-left: none;
+        padding-left: 0;
+        margin-left: 0;
+    }
+    
+    .navbar-minimal .user-menu .btn-logout {
+        display: none;
+    }
+}
+
+/* Tablet and up (768px and up) */
+@media (min-width: 768px) {
+    .navbar-minimal .nav-container {
+        padding: 15px 40px;
+    }
+    
     .index-container {
-        min-height: calc(100vh - 60px);
-        padding: 15px;
+        min-height: calc(100vh - 180px);
+        padding: 30px 40px;
     }
     
     .index-content {
-        gap: 25px;
-        max-width: 100%;
+        gap: 28px;
+        margin-top: -80px;
     }
     
     .index-logo h1 {
-        font-size: 36px;
+        font-size: 48px;
     }
     
     .index-search .search-input {
-        padding: 14px 45px;
-        font-size: 15px;
+        padding: 18px 20px 18px 54px;
+        min-height: 60px;
     }
     
     .search-icon {
-        left: 15px;
+        left: 18px;
+    }
+    
+    .search-icon svg {
+        width: 22px;
+        height: 22px;
+    }
+    
+    .index-search .search-results .search-item {
+        flex-direction: row;
+        align-items: center;
+        gap: 12px;
+        padding: 14px 20px;
+    }
+    
+    .index-search .search-results .search-item-code {
+        min-width: 90px;
+        flex-shrink: 0;
+    }
+    
+    .index-search .search-results .search-item-name {
+        flex: 1;
+    }
+    
+    .index-search .search-results .search-item-professor-match {
+        margin-left: 102px;
+        margin-top: -8px;
     }
     
     .index-subtitle p {
-        font-size: 14px;
+        font-size: 15px;
     }
 }
 
+/* Small mobile (up to 480px) */
 @media (max-width: 480px) {
+    .index-container {
+        padding: 16px 12px;
+    }
+    
+    .index-content {
+        gap: 20px;
+    }
+    
     .index-logo h1 {
         font-size: 28px;
     }
     
     .index-search .search-input {
-        padding: 12px 40px;
-        font-size: 14px;
-        border-radius: 20px;
+        padding: 14px 14px 14px 44px;
+        font-size: 16px; /* Prevents zoom on iOS */
+        border-radius: 10px;
+        min-height: 50px;
     }
     
     .search-icon {
-        left: 12px;
+        left: 14px;
     }
     
     .search-icon svg {
         width: 18px;
         height: 18px;
+    }
+    
+    .index-search .search-results .search-item {
+        padding: 12px 14px;
+    }
+    
+    .index-search .search-results .search-item-code {
+        font-size: 13px;
+    }
+    
+    .index-search .search-results .search-item-name {
+        font-size: 12px;
+    }
+    
+    .index-subtitle p {
+        font-size: 13px;
     }
 }
