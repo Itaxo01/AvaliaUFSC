@@ -42,8 +42,9 @@ public class Avaliacao {
 	@JoinColumn(name = "disciplina_id")
 	private Disciplina disciplina;
 
+	// Nota: A coluna se chama "user_email" mas é BIGINT referenciando usuarios.id (legado)
 	@ManyToOne(fetch = FetchType.LAZY, optional = false)
-	@JoinColumn(name = "user_email", referencedColumnName = "email", nullable = false)
+	@JoinColumn(name = "user_email", nullable = false)
 	private Usuario usuario;
 
 	@Column(name = "nota", nullable = false)

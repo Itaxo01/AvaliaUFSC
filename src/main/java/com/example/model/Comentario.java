@@ -60,7 +60,7 @@ public class Comentario {
 	private Long comentarioId;
 
 	@ManyToOne(fetch = FetchType.LAZY, optional = false)
-	@JoinColumn(name = "user_email", referencedColumnName = "email", nullable = false)
+	@JoinColumn(name = "user_email", nullable = false)
 	private Usuario usuario;
 
 	@Column(name = "up_votes")
