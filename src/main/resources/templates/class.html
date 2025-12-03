@@ -301,7 +301,22 @@
                 <div class="section-card">
                     <div class="section-header">
                         <h2>Comentários</h2>
-                        <button class="btn-add-review" onclick="toggleCommentEditor()">Adicionar Comentário</button>
+                        <div class="section-header-actions">
+                            <button class="btn-add-review" onclick="toggleCommentEditor()">Adicionar Comentário</button>
+                            <span class="info-icon" tabindex="0">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <line x1="12" y1="16" x2="12" y2="12"></line>
+                                    <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                                </svg>
+                                <span class="info-tooltip info-tooltip-left">
+                                    <strong>Como funcionam as avaliações?</strong><br><br>
+                                    <b>Estrelas:</b> Clique nas estrelas para avaliar a disciplina ou professor. Você pode alterar sua nota a qualquer momento.<br><br>
+                                    <b>Comentários:</b> Selecione um professor na lista à esquerda para adicionar comentários específicos sobre ele. No celular, toque no ícone ao lado do nome da disciplina para abrir a lista de professores.<br><br>
+                                    <em>Suas avaliações são anônimas.</em>
+                                </span>
+                            </span>
+                        </div>
                     </div>
                     
                     <!-- Editor de Comentário Inline -->

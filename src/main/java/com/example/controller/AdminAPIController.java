@@ -394,18 +394,10 @@ public class AdminAPIController {
 	 * Endpoint para executar scrapping de disciplinas
 	 */
 	@PostMapping("/scrapper/execute")
-	public ResponseEntity<String> executeScrapper(HttpServletRequest request, @RequestBody Map<String,String> body) {
+	public ResponseEntity<String> executeScrapper(HttpServletRequest request) {
 		boolean auth = sessionService.verifySession(request);
 		if (!auth || !sessionService.currentUserIsAdmin(request)) {
 			return ResponseEntity.status(403).build();
-		}
-		
-		String cagrUsername = body.get("cagrUsername");
-		String cagrPassword = body.get("cagrPassword");
-		
-		if (cagrUsername == null || cagrUsername.trim().isEmpty() || 
-			cagrPassword == null || cagrPassword.trim().isEmpty()) {
-			return ResponseEntity.status(400).body("Usuário e senha do CAGR são obrigatórios.");
 		}
 		
 		try {
@@ -416,7 +408,7 @@ public class AdminAPIController {
 			// Executa em thread separada para não bloquear a requisição
 			new Thread(() -> {
 				try {
-					disciplinaScrapper.executarScraping(cagrUsername.trim(), cagrPassword.trim(), adminName);
+					disciplinaScrapper.executarScraping(adminName);
 				} catch (Exception e) {
 					System.err.println("Erro durante scraping executado por " + adminName + ": " + e.getMessage());
 				}

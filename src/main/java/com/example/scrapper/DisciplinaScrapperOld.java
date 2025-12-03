@@ -33,19 +33,21 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 
 /**
- * Web Scraper para capturar disciplinas e professores do sistema CAGR da UFSC.
- * Mantém controle da última execução para evitar requisições desnecessárias.
+ * Antigo scrapper de disciplinas do CAGR/UFSC.
+ * A diferença é que esse utiliza login, o outro não precisa.
+ * @deprecated 
  */
 @Service
-public class DisciplinaScrapper { 
-    private static final Logger logger = LoggerFactory.getLogger(DisciplinaScrapper.class);
+public class DisciplinaScrapperOld { 
+    private static final Logger logger = LoggerFactory.getLogger(DisciplinaScrapperOld.class);
     
     private static final Object lock = new Object();
     
     // URLs e configurações
-    private static final String TURMAS_URL = "https://cagr.sistemas.ufsc.br/modules/comunidade/cadastroTurmas/index.xhtml";
-    
-	 private static final String USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36";
+    private static final String BASE_URL = "https://cagr.sistemas.ufsc.br";
+    private static final String LOGIN_URL = "https://sistemas.ufsc.br/login?service=https%3A%2F%2Fcagr.sistemas.ufsc.br%2Fj_spring_cas_security_check&userType=padrao&convertToUserType=alunoGraduacao&lockUserType=1";
+    private static final String TURMAS_URL = BASE_URL + "/modules/aluno/cadastroTurmas/";
+    private static final String USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36";
     
     // Cliente HTTP configurado
     private final OkHttpClient httpClient;
@@ -63,7 +65,7 @@ public class DisciplinaScrapper {
     
     // Sets para evitar duplicatas
     
-    public DisciplinaScrapper() {
+    public DisciplinaScrapperOld() {
         // Cliente HTTP com timeout e cookies
         java.net.CookieManager cookieManager = new java.net.CookieManager();
         cookieManager.setCookiePolicy(java.net.CookiePolicy.ACCEPT_ALL);
@@ -85,7 +87,7 @@ public class DisciplinaScrapper {
     /**
      * Executa o scraping com credenciais específicas e rastreamento do administrador
      */
-    public ScrapingResult executarScraping(String administrador) {
+    public ScrapingResult executarScraping(String user, String pass, String administrador) {
         synchronized (lock) {
             // Verifica se já está executando
             if (getStatus().isExecutando()) {
@@ -98,12 +100,12 @@ public class DisciplinaScrapper {
             
             ScrapingResult result = new ScrapingResult();
             try {
-                // 1. Verificar acesso
-					 if (!verificarAcesso()) {
-						  result.setErro("Falha ao acessar a página de turmas");
-						  scrapperStatusService.marcarFimExecucao(false, 0, 0, "Falha ao acessar a página de turmas");
-						  return result;
-					 }
+                // 1. Fazer login
+                if (!fazerLogin(user, pass)) {
+                    result.setErro("Falha no login");
+                    scrapperStatusService.marcarFimExecucao(false, 0, 0, "Falha no login");
+                    return result;
+                }
                 
                 // 2. Selecionar os semestres e centros do formulário.
 					 DadosIniciais dadosIniciais = obterDadosIniciais();
@@ -155,10 +157,65 @@ public class DisciplinaScrapper {
             return result;
         }
     }
+    private boolean fazerLogin(String user, String pass) throws IOException {
+        logger.info("Fazendo login no CAGR...");
+        
+        // Primeiro, obter a página de login para cookies e tokens
+        Request getLoginPage = new Request.Builder()
+                .url(LOGIN_URL)
+                .header("User-Agent", USER_AGENT)
+                .build();
+                
+        try (Response loginPageResponse = httpClient.newCall(getLoginPage).execute()) {
+            if (!loginPageResponse.isSuccessful()) {
+                logger.error("Erro ao carregar página de login: {}", loginPageResponse.code());
+                return false;
+            }
+            
+            // Parse da página para encontrar campos ocultos
+            Document loginDoc = Jsoup.parse(loginPageResponse.body().string());
+            
+            // Construir formulário de login
+            FormBody.Builder formBuilder = new FormBody.Builder()
+                    .add("username", user)
+                    .add("password", pass);
+                    
+            // Adicionar campos ocultos se existirem
+            Elements hiddenInputs = loginDoc.select("input[type=hidden]");
+            for (Element input : hiddenInputs) {
+                String name = input.attr("name");
+                String value = input.attr("value");
+                if (!name.isEmpty()) {
+                    formBuilder.add(name, value);
+                }
+            }
+            
+            // Enviar login
+            Request loginRequest = new Request.Builder()
+                    .url(LOGIN_URL)
+                    .header("User-Agent", USER_AGENT)
+                    .header("Referer", LOGIN_URL)
+                    .post(formBuilder.build())
+                    .build();
+                    
+            try (Response loginResponse = httpClient.newCall(loginRequest).execute()) {
+                if (!loginResponse.isSuccessful()) {
+                    logger.error("Erro na requisição de login: {}", loginResponse.code());
+                    return false;
+                }
+                
+                logger.info("Login enviado, verificando acesso...");
+                
+                // Verificar login tentando acessar a página de turmas
+                return verificarAcessoAutenticado();
+            }
+        }
+    }
+    
     /**
-     * Verifica se a página é acessível tentando acessar a página de turmas
+     * Verifica se o login foi bem-sucedido tentando acessar a página de turmas
      */
-    private boolean verificarAcesso() throws IOException {
+    private boolean verificarAcessoAutenticado() throws IOException {
         Request testRequest = new Request.Builder()
                 .url(TURMAS_URL)
                 .header("User-Agent", USER_AGENT)
@@ -166,7 +223,7 @@ public class DisciplinaScrapper {
         
         try (Response testResponse = httpClient.newCall(testRequest).execute()) {
             if (!testResponse.isSuccessful()) {
-                logger.error(	"Erro ao testar acesso: {}", testResponse.code());
+                logger.error("Erro ao testar acesso autenticado: {}", testResponse.code());
                 return false;
             }
             
@@ -174,10 +231,10 @@ public class DisciplinaScrapper {
             
 				// Se conseguiu acessar a página de turmas, login foi bem-sucedido
 				if (finalUrl.contains("cadastroTurmas")){
-					logger.info("Acesso verificado com sucesso - acesso à página de turmas confirmado");
+					logger.info("Login verificado com sucesso - acesso à página de turmas confirmado");
 					return true;
 				}
-				logger.error("Acesso negado - Página de turmas inacessível");
+				logger.error("Acesso negado - usuário não autenticado ou credenciais inválidas");
             return false;
         }
     }

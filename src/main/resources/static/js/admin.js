@@ -973,43 +973,27 @@ function displayScrapperStatus(status) {
 
 // ==================== SCRAPPER MODAL ====================
 
-function showCredentialsModal() {
-	const modal = document.getElementById('credentials-modal');
-	modal.style.display = 'block';
-	setTimeout(() => document.getElementById('cagr-username').focus(), 100);
-}
-
-function hideCredentialsModal() {
-	const modal = document.getElementById('credentials-modal');
-	modal.style.display = 'none';
-	document.getElementById('credentials-form').reset();
-}
 
 async function executeScrapper() {
-	const form = document.getElementById('credentials-form');
-	const formData = new FormData(form);
-	const submitButton = form.querySelector('button[type="submit"]');
-	const originalText = submitButton.textContent;
+	// Obter o botão e adicionar estado de loading
+	const button = document.getElementById('execute-scrapper-btn');
+	let originalText = '';
+	
+	if (button) {
+		originalText = button.innerHTML;
+		button.disabled = true;
+		button.innerHTML = '<span class="btn-spinner"></span> Executando...';
+	}
 	
 	try {
-		submitButton.disabled = true;
-		submitButton.innerHTML = '<span class="btn-spinner"></span> Executando...';
-		
-		const credentials = {
-			cagrUsername: formData.get('cagrUsername'),
-			cagrPassword: formData.get('cagrPassword')
-		};
-		
 		const response = await fetch('/api/admin/scrapper/execute', {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify(credentials),
 			credentials: 'same-origin'
 		});
 		
 		if (response.status === 200) {
 			alert('Sucesso: ' + await response.text());
-			hideCredentialsModal();
 			setTimeout(() => loadScrapperData(true), 1000);
 		} else if (response.status === 400 || response.status === 409) {
 			alert('Erro: ' + await response.text());
@@ -1024,8 +1008,11 @@ async function executeScrapper() {
 		console.error('Erro:', error);
 		alert('Erro ao executar scrapper.');
 	} finally {
-		submitButton.disabled = false;
-		submitButton.textContent = originalText;
+		// Restaurar o botão
+		if (button) {
+			button.disabled = false;
+			button.innerHTML = originalText;
+		}
 	}
 }
 

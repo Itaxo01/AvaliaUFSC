@@ -141,40 +141,6 @@
     color: var(--text-secondary);
 }
 
-/* Remove Rating Link */
-.remove-rating-link {
-    margin-top: 4px;
-}
-
-.remove-rating-link span {
-    font-size: 11px;
-    color: var(--accent);
-    cursor: pointer;
-    text-decoration: underline;
-    transition: color 0.2s;
-}
-
-.remove-rating-link span:hover {
-    color: #c0392b;
-}
-
-/* Add Rating Link */
-.add-rating-link {
-    margin-top: 4px;
-}
-
-.add-rating-link span {
-    font-size: 11px;
-    color: var(--primary-light);
-    cursor: pointer;
-    text-decoration: underline;
-    transition: color 0.2s;
-}
-
-.add-rating-link span:hover {
-    color: var(--primary);
-}
-
 /* Layout em Duas Colunas */
 .two-column-layout {
     display: flex;
@@ -218,6 +184,124 @@
     margin: 0;
     padding: 0;
     border: none;
+}
+
+/* Section Header Actions (button + info icon) */
+.section-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* ============================================
+   INFO ICON & TOOLTIP (for class page)
+   ============================================ */
+
+.info-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    color: var(--text-muted);
+    cursor: help;
+    position: relative;
+    vertical-align: middle;
+    transition: color 0.2s;
+    flex-shrink: 0;
+}
+
+.info-icon:hover,
+.info-icon:focus {
+    color: var(--primary);
+    outline: none;
+}
+
+.info-icon svg {
+    width: 18px;
+    height: 18px;
+}
+
+.info-tooltip {
+    display: none;
+    position: absolute;
+    bottom: calc(100% + 10px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--bg-white);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 14px 16px;
+    width: 280px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    text-align: left;
+    z-index: 1000;
+}
+
+/* Tooltip positioned to the left for right-side elements */
+.info-tooltip-left {
+    left: auto;
+    right: 0;
+    transform: none;
+}
+
+.info-tooltip::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 8px solid transparent;
+    border-top-color: var(--bg-white);
+}
+
+.info-tooltip::before {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 9px solid transparent;
+    border-top-color: var(--border-color);
+}
+
+.info-tooltip-left::after {
+    left: auto;
+    right: 10px;
+    transform: none;
+}
+
+.info-tooltip-left::before {
+    left: auto;
+    right: 9px;
+    transform: none;
+}
+
+.info-tooltip strong {
+    display: block;
+    color: var(--text-primary);
+    font-size: 14px;
+    margin-bottom: 4px;
+}
+
+.info-tooltip b {
+    color: var(--text-primary);
+}
+
+.info-tooltip em {
+    display: block;
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 8px;
+}
+
+.info-icon:hover .info-tooltip,
+.info-icon:focus .info-tooltip {
+    display: block;
 }
 
 /* Lista de Professores */

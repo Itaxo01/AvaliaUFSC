@@ -223,9 +223,6 @@ function atualizarDisciplina(stats, comentarios) {
     if (ratingCountElement) {
         ratingCountElement.textContent = 
             `${stats.total} ${stats.total === 1 ? 'avaliação' : 'avaliações'}`;
-        
-        // Add "remove rating" link if user has voted
-        addRemoveRatingLink(ratingCountElement, null);
     }
     
     const desktopStars = document.querySelector('.discipline-rating .rating-stars');
@@ -265,11 +262,6 @@ function atualizarProfessor(index, stats) {
     ratingCountElement.textContent = 
         `${stats.total} ${stats.total === 1 ? 'avaliação' : 'avaliações'}`;
     
-    // Add "remove rating" link if user has voted for this professor
-    const prof = PROFESSORES_DATA[index];
-    const profId = prof?.id || prof?.professorId || prof?.ID || index;
-    addRemoveRatingLink(ratingCountElement, profId);
-    
     preencherEstrelas(professorItem.querySelector('.rating-stars'), stats.media);
 }
 
@@ -301,135 +293,6 @@ function preencherEstrelas(container, nota) {
 // ============================================
 // RATING MODAL & SUBMISSION
 // ============================================
-
-/**
- * Add "remove rating" or "add rating" link below rating count
- */
-function addRemoveRatingLink(ratingCountElement, professorId) {
-    // Check if user has voted for this context
-    const userRating = getUserCurrentRating(professorId);
-    
-    // Remove existing link if present
-    const existingLink = ratingCountElement.parentElement.querySelector('.remove-rating-link, .add-rating-link');
-    if (existingLink) {
-        existingLink.remove();
-    }
-    
-    if (userRating !== null) {
-        // User has rated - show remove link
-        const removeLink = document.createElement('div');
-        removeLink.className = 'remove-rating-link';
-        // ✅ FIX: Use quotes to preserve professorId as string (prevents "0882497234989588" from becoming 882497234989588)
-        removeLink.innerHTML = `<span onclick="removeRating(event, '${professorId}')">Remover minha avaliação</span>`;
-        ratingCountElement.parentElement.appendChild(removeLink);
-    } else {
-        // User hasn't rated - show add link
-        const addLink = document.createElement('div');
-        addLink.className = 'add-rating-link';
-        addLink.innerHTML = `<span onclick="openRatingModal('${professorId}')">Adicionar avaliação</span>`;
-        ratingCountElement.parentElement.appendChild(addLink);
-    }
-}
-
-/**
- * Remove user's rating
- */
-async function removeRating(event, professorId = null) {
-    
-    if (!confirm('Tem certeza que deseja remover sua avaliação?')) {
-        return;
-    }
-    
-    // Find the clicked element and its parent link
-    const clickedSpan = event?.target;
-    const removeLink = clickedSpan?.closest('.remove-rating-link');
-    
-    // Find the rating section based on context
-    let ratingSection = null;
-    if (professorId && professorId !== 'null') {
-        // For professor rating - find the professor card
-        const professorCards = document.querySelectorAll('.professor-item');
-        for (let card of professorCards) {
-            const profData = PROFESSORES_DATA[Array.from(professorCards).indexOf(card)];
-            if (profData) {
-                const profId = String(profData.id || profData.professorId || profData.ID || '');
-                if (profId === String(professorId)) {
-                    ratingSection = card.querySelector('.professor-rating');
-                    break;
-                }
-            }
-        }
-    } else {
-        // For discipline rating
-        ratingSection = document.querySelector('.discipline-rating');
-    }
-    
-    // Disable the link immediately to prevent double-clicks
-    if (removeLink) {
-        removeLink.style.pointerEvents = 'none';
-        removeLink.style.opacity = '0.6';
-        const originalHtml = clickedSpan.innerHTML;
-        clickedSpan.dataset.originalHtml = originalHtml;
-        clickedSpan.innerHTML = '<span class="loading-inline" style="display: inline-flex; align-items: center; gap: 4px;"><div class="spinner spinner-small"></div><span>Removendo...</span></span>';
-    }
-    
-    // Add subtle visual feedback to rating section (no overlay)
-    if (ratingSection) {
-        ratingSection.style.opacity = '0.7';
-        ratingSection.style.transition = 'opacity 0.2s';
-    }
-    
-    try {
-        const formData = new FormData();
-        formData.append('disciplinaId', CLASS_ID);
-        if (professorId && professorId !== 'null') {
-            formData.append('professorId', professorId);
-        }
-        
-        const response = await fetch('/api/avaliacao/rating/delete', {
-            method: 'POST',
-            body: formData
-        });
-        
-        if (!response.ok) {
-            const errorText = await response.text();
-            
-            // Restore UI on error
-            if (removeLink && clickedSpan.dataset.originalHtml) {
-                removeLink.style.pointerEvents = '';
-                removeLink.style.opacity = '';
-                clickedSpan.innerHTML = clickedSpan.dataset.originalHtml;
-            }
-            if (ratingSection) {
-                ratingSection.style.opacity = '';
-            }
-            
-            showToast(parseErrorMessage(errorText) || 'Erro ao remover avaliação', 'error');
-            return;
-        }
-        
-        console.log('Avaliação removida com sucesso');
-        
-        // Keep loading state while page reloads
-        // Reload page to show updated ratings
-        window.location.reload();
-        
-    } catch (error) {
-        console.error('Erro ao remover avaliação:', error);
-        
-        // Restore UI on error
-        if (removeLink && clickedSpan.dataset.originalHtml) {
-            removeLink.style.pointerEvents = '';
-            removeLink.style.opacity = '';
-            clickedSpan.innerHTML = clickedSpan.dataset.originalHtml;
-        }
-        if (ratingSection) {
-            ratingSection.style.opacity = '';
-        }
-        
-        showToast(parseErrorMessage(error.message) || 'Erro ao remover avaliação', 'error');
-    }
-}
 
 /**
  * Open rating modal for user to select stars
