@@ -20,7 +20,7 @@ public class AuthenticationInterceptor implements HandlerInterceptor {
 
     // URLs accessible to non-authenticated users
     private static final String[] PUBLIC_URLS = {
-        "/", "/login/**", "/register/**", "/css/**", "/js/**", "/images/**", "/error"
+        "/", "/login/**", "/register/**", "/css/**", "/js/**", "/images/**", "/error", "/forgot-password/**", "/reset-password/**"
     };
 
     // URLs that require authentication but not admin
